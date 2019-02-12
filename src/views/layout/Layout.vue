@@ -1,11 +1,11 @@
 <template>
-  <div class="app-wrapper" :class="classObj">
-    <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"></div>
-    <sidebar class="sidebar-container"></sidebar>
+  <div :class="classObj" class="app-wrapper">
+    <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
+    <sidebar v-if="device!=='mobile'" class="sidebar-container"/>
     <div class="main-container">
-      <navbar></navbar>
-      <tags-view></tags-view>
-      <app-main></app-main>
+      <navbar/>
+      <tags-view/>
+      <app-main/>
     </div>
   </div>
 </template>
@@ -15,7 +15,7 @@ import { Navbar, Sidebar, AppMain, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 
 export default {
-  name: 'layout',
+  name: 'Layout',
   components: {
     Navbar,
     Sidebar,
@@ -30,11 +30,31 @@ export default {
     device() {
       return this.$store.state.app.device
     },
+    fullPath() {
+      return this.$route.fullPath
+    },
     classObj() {
       return {
         hideSidebar: !this.sidebar.opened,
+        openSidebar: this.sidebar.opened,
         withoutAnimation: this.sidebar.withoutAnimation,
         mobile: this.device === 'mobile'
+      }
+    }
+  },
+  created() {
+    document.onkeydown = (e) => {
+      var key = window.event.keyCode
+      if (key === 13) {
+        this.$children[3].$children.map((v, i) => {
+          if (v.$vnode.data.key === this.fullPath) {
+            try {
+              v.handleFilter()
+            } catch (e) {
+              console.log(e)
+            }
+          }
+        })
       }
     }
   },
@@ -47,12 +67,16 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
-  @import "src/styles/mixin.scss";
+  @import "~@/styles/mixin.scss";
   .app-wrapper {
     @include clearfix;
     position: relative;
     height: 100%;
     width: 100%;
+    &.mobile.openSidebar{
+      position: fixed;
+      top: 0;
+    }
   }
   .drawer-bg {
     background: #000;

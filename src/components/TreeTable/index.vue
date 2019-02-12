@@ -1,26 +1,38 @@
 <template>
-  <el-table :data="formatData" :row-style="showRow" v-bind="$attrs">
-    <el-table-column v-if="columns.length===0" width="150">
+  <el-table
+    :data="formatData"
+    :row-style="showRow"
+    v-bind="$attrs"
+    :row-class-name ="rowClassName"
+    :fit ="true"
+    :border="false"
+    row-key="id"
+    size="mini"
+    highlight-current-row
+    element-loading-text="给我一点时间">
+    <el-table-column v-if="columns.length===0" :label="firstLabel" width="250">
       <template slot-scope="scope">
-        <span v-for="space in scope.row._level" class="ms-tree-space" :key="space"></span>
-        <span class="tree-ctrl" v-if="iconShow(0,scope.row)" @click="toggleExpanded(scope.$index)">
-          <i v-if="!scope.row._expanded" class="el-icon-plus"></i>
-          <i v-else class="el-icon-minus"></i>
+        <span v-for="space in scope.row._level" :key="space" class="ms-tree-space"/>
+        <span v-if="iconShow(0,scope.row)&&permission" class="tree-ctrl" @click="toggleExpanded(scope.row)" >
+          <i v-if="!scope.row._expanded||iconSecFlag(0,scope.row)" class="el-icon-plus"/>
+          <i v-else class="el-icon-minus"/>
         </span>
-        {{scope.$index}}
+        <span >{{ scope.row.name }}</span>
       </template>
     </el-table-column>
-    <el-table-column v-else v-for="(column, index) in columns" :key="column.value" :label="column.text" :width="column.width">
+    <el-table-column v-for="(column, index) in columns" v-else :key="column.value" :label="column.text" :width="column.width">
       <template slot-scope="scope">
-        <span v-if="index === 0" v-for="space in scope.row._level" class="ms-tree-space" :key="space"></span>
-        <span class="tree-ctrl" v-if="iconShow(index,scope.row)" @click="toggleExpanded(scope.$index)">
-          <i v-if="!scope.row._expanded" class="el-icon-plus"></i>
-          <i v-else class="el-icon-minus"></i>
+        <!-- Todo -->
+        <!-- eslint-disable-next-line vue/no-confusing-v-for-v-if -->
+        <span v-for="space in scope.row._level" v-if="index === 0" :key="space" class="ms-tree-space"/>
+        <span v-if="iconShow(index,scope.row)" class="tree-ctrl" @click="toggleExpanded(scope.row)">
+          <i v-if="!scope.row._expanded" class="el-icon-plus"/>
+          <i v-else class="el-icon-minus"/>
         </span>
-        {{scope.row[column.value]}}
+        {{ scope.row[column.value] }}
       </template>
     </el-table-column>
-    <slot></slot>
+    <slot/>
   </el-table>
 </template>
 
@@ -31,8 +43,9 @@
 */
 import treeToArray from './eval'
 export default {
-  name: 'treeTable',
+  name: 'TreeTable',
   props: {
+    /* eslint-disable */
     data: {
       type: [Array, Object],
       required: true
@@ -41,11 +54,28 @@ export default {
       type: Array,
       default: () => []
     },
+    toggleExpanded:Function,
     evalFunc: Function,
     evalArgs: Array,
     expandAll: {
       type: Boolean,
       default: false
+    },
+    icon: {
+      type: Boolean,
+      default: false
+    },
+    icon: {
+      type: Boolean,
+      default: false
+    },
+    permission: {
+      type: Boolean,
+      default: false
+    },
+    firstLabel: {
+      type: String,
+      default: '名称'
     }
   },
   computed: {
@@ -63,19 +93,27 @@ export default {
     }
   },
   methods: {
+    rowClassName(row, rowIndex){
+      return `rowClassName${row.row.id}`
+    },
     showRow: function(row) {
       const show = (row.row.parent ? (row.row.parent._expanded && row.row.parent._show) : true)
       row.row._show = show
       return show ? 'animation:treeTableShow 1s;-webkit-animation:treeTableShow 1s;' : 'display:none;'
     },
-    // 切换下级是否展开
-    toggleExpanded: function(trIndex) {
-      const record = this.formatData[trIndex]
-      record._expanded = !record._expanded
-    },
+    // // 切换下级是否展开 
+    // toggleExpanded: function(trIndex) {
+    //   console.log(this.formatData[trIndex])
+    //   const record = this.formatData[trIndex]
+    //   record._expanded = !record._expanded
+    // },
     // 图标显示
     iconShow(index, record) {
-      return (index === 0 && record.children && record.children.length > 0)
+      return this.icon||(index === 0 && record.children && record.children.length > 0)
+    },
+    iconSecFlag(index, record) {
+      // console.log(!(index === 0 && record.children && record.children.length > 0))
+      return this.iconSec&&!(index === 0 && record.children && record.children.length > 0)
     }
   }
 }

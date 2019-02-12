@@ -10,7 +10,11 @@ export default{
       const permissionRoles = value
 
       const hasPermission = roles.some(role => {
-        return permissionRoles.includes(role)
+        if (roles.includes('admin')) {
+          return true
+        } else {
+          return permissionRoles.includes(role)
+        }
       })
 
       if (!hasPermission) {

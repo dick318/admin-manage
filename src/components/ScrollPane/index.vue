@@ -1,16 +1,14 @@
 <template>
-  <div class="scroll-container" ref="scrollContainer" @wheel.prevent="handleScroll">
-    <div class="scroll-wrapper" ref="scrollWrapper" :style="{left: left + 'px'}">
-      <slot></slot>
-    </div>
-  </div>
+  <el-scrollbar ref="scrollContainer" :vertical="false" class="scroll-container" @wheel.native.prevent="handleScroll">
+    <slot/>
+  </el-scrollbar>
 </template>
 
 <script>
-const padding = 15 // tag's padding
+const tagAndTagSpacing = 4 // tagAndTagSpacing
 
 export default {
-  name: 'scrollPane',
+  name: 'ScrollPane',
   data() {
     return {
       left: 0
@@ -18,41 +16,45 @@ export default {
   },
   methods: {
     handleScroll(e) {
-      const eventDelta = e.wheelDelta || -e.deltaY * 3
-      const $container = this.$refs.scrollContainer
-      const $containerWidth = $container.offsetWidth
-      const $wrapper = this.$refs.scrollWrapper
-      const $wrapperWidth = $wrapper.offsetWidth
-
-      if (eventDelta > 0) {
-        this.left = Math.min(0, this.left + eventDelta)
-      } else {
-        if ($containerWidth - padding < $wrapperWidth) {
-          if (this.left < -($wrapperWidth - $containerWidth + padding)) {
-            this.left = this.left
-          } else {
-            this.left = Math.max(this.left + eventDelta, $containerWidth - $wrapperWidth - padding)
-          }
-        } else {
-          this.left = 0
-        }
-      }
+      const eventDelta = e.wheelDelta || -e.deltaY * 40
+      const $scrollWrapper = this.$refs.scrollContainer.$refs.wrap
+      $scrollWrapper.scrollLeft = $scrollWrapper.scrollLeft + eventDelta / 4
     },
-    moveToTarget($target) {
-      const $container = this.$refs.scrollContainer
+    moveToTarget(currentTag) {
+      const $container = this.$refs.scrollContainer.$el
       const $containerWidth = $container.offsetWidth
-      const $targetLeft = $target.offsetLeft
-      const $targetWidth = $target.offsetWidth
+      const $scrollWrapper = this.$refs.scrollContainer.$refs.wrap
+      const tagList = this.$parent.$refs.tag
 
-      if ($targetLeft < -this.left) {
-        // tag in the left
-        this.left = -$targetLeft + padding
-      } else if ($targetLeft + padding > -this.left && $targetLeft + $targetWidth < -this.left + $containerWidth - padding) {
-        // tag in the current view
-        // eslint-disable-line
+      let firstTag = null
+      let lastTag = null
+
+      // find first tag and last tag
+      if (tagList.length > 0) {
+        firstTag = tagList[0]
+        lastTag = tagList[tagList.length - 1]
+      }
+
+      if (firstTag === currentTag) {
+        $scrollWrapper.scrollLeft = 0
+      } else if (lastTag === currentTag) {
+        $scrollWrapper.scrollLeft = $scrollWrapper.scrollWidth - $containerWidth
       } else {
-        // tag in the right
-        this.left = -($targetLeft - ($containerWidth - $targetWidth) + padding)
+        // find preTag and nextTag
+        const currentIndex = tagList.findIndex(item => item === currentTag)
+        const prevTag = tagList[currentIndex - 1]
+        const nextTag = tagList[currentIndex + 1]
+        // the tag's offsetLeft after of nextTag
+        const afterNextTagOffsetLeft = nextTag.$el.offsetLeft + nextTag.$el.offsetWidth + tagAndTagSpacing
+
+        // the tag's offsetLeft before of prevTag
+        const beforePrevTagOffsetLeft = prevTag.$el.offsetLeft - tagAndTagSpacing
+
+        if (afterNextTagOffsetLeft > $scrollWrapper.scrollLeft + $containerWidth) {
+          $scrollWrapper.scrollLeft = afterNextTagOffsetLeft - $containerWidth
+        } else if (beforePrevTagOffsetLeft < $scrollWrapper.scrollLeft) {
+          $scrollWrapper.scrollLeft = beforePrevTagOffsetLeft
+        }
       }
     }
   }
@@ -65,8 +67,13 @@ export default {
   position: relative;
   overflow: hidden;
   width: 100%;
-  .scroll-wrapper {
-    position: absolute;
+  /deep/ {
+    .el-scrollbar__bar {
+      bottom: 0px;
+    }
+    .el-scrollbar__wrap {
+      height: 49px;
+    }
   }
 }
 </style>

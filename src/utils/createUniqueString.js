@@ -1,5 +1,5 @@
 /**
- * Created by jiachenpan on 17/3/8.
+ * Created by xiewanlin on 17/3/8.
  */
 export default function createUniqueString() {
   const timestamp = +new Date() + ''

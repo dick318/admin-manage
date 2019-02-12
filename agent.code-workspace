@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"debug.node.autoAttach": "on",
+		"eslint.autoFixOnSave": true
+	}
+}

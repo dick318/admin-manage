@@ -1,58 +1,78 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-const _import = require('./_import_' + process.env.NODE_ENV)
-// in development-env not use lazy-loading, because lazy-loading too many pages will cause webpack hot update too slow. so only in production use lazy-loading;
-// detail: https://panjiachen.github.io/vue-element-admin-site/#/lazy-loading
 
 Vue.use(Router)
 
 /* Layout */
-import Layout from '../views/layout/Layout'
+import Layout from '@/views/layout/Layout'
+/* Router Modules */
+import dashboardRouter from './modules/dashboard'
+import agentRouter from './modules/agent'
+import cardRouter from './modules/card'
+import businessRouter from './modules/business'
+import financeRouter from './modules/finance'
+import otherRouter from './modules/other'
+import vpdnRouter from './modules/vpdn'
+import batchRouter from './modules/batch'
+import mobileRouter from './modules/mobile'
+import developmentRouter from './modules/development'
 
-/** note: submenu only apppear when children.length>=1
-*   detail see  https://panjiachen.github.io/vue-element-admin-site/#/router-and-nav?id=sidebar
-**/
+/* Router Modules */
+// import componentsRouter from './modules/components'
+// import chartsRouter from './modules/charts'
+// import tableRouter from './modules/table'
+// import nestedRouter from './modules/nested'
+
+/** note: Submenu only appear when children.length>=1
+ *  detail see  https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
+ **/
 
 /**
 * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
 * alwaysShow: true               if set true, will always show the root menu, whatever its child routes length
 *                                if not set alwaysShow, only more than one route under the children
 *                                it will becomes nested mode, otherwise not show the root menu
-* redirect: noredirect           if `redirect:noredirect` will no redirct in the breadcrumb
+* redirect: noredirect           if `redirect:noredirect` will no redirect in the breadcrumb
 * name:'router-name'             the name is used by <keep-alive> (must set!!!)
 * meta : {
-    roles: ['admin','editor']     will control the page roles (you can set multiple roles)
+    roles: ['admin','editor']    will control the page roles (you can set multiple roles)
     title: 'title'               the name show in submenu and breadcrumb (recommend set)
-    icon: 'svg-name'             the icon show in the sidebar,
-    noCache: true                if true ,the page will no be cached(default is false)
+    icon: 'svg-name'             the icon show in the sidebar
+    noCache: true                if true, the page will no be cached(default is false)
+    breadcrumb: false            if false, the item will hidden in breadcrumb(default is true)
   }
 **/
 export const constantRouterMap = [
-  { path: '/login', component: _import('login/index'), hidden: true },
-  { path: '/authredirect', component: _import('login/authredirect'), hidden: true },
-  { path: '/404', component: _import('errorPage/404'), hidden: true },
-  { path: '/401', component: _import('errorPage/401'), hidden: true },
   {
-    path: '',
+    path: '/redirect',
     component: Layout,
-    redirect: 'dashboard',
-    children: [{
-      path: 'dashboard',
-      component: _import('dashboard/index'),
-      name: 'dashboard',
-      meta: { title: 'dashboard', icon: 'dashboard', noCache: true, roles: [2] }
-    }]
+    hidden: true,
+    children: [
+      {
+        path: '/redirect/:path*',
+        component: () => import('@/views/redirect/index')
+      }
+    ]
   },
   {
-    path: '/documentation',
-    component: Layout,
-    redirect: '/documentation/index',
-    children: [{
-      path: 'index',
-      component: _import('documentation/index'),
-      name: 'documentation',
-      meta: { title: 'documentation', icon: 'documentation', noCache: true }
-    }]
+    path: '/login',
+    component: () => import('@/views/login/index'),
+    hidden: true
+  },
+  {
+    path: '/auth-redirect',
+    component: () => import('@/views/login/authredirect'),
+    hidden: true
+  },
+  {
+    path: '/404',
+    component: () => import('@/views/errorPage/404'),
+    hidden: true
+  },
+  {
+    path: '/401',
+    component: () => import('@/views/errorPage/401'),
+    hidden: true
   }
 ]
 
@@ -63,203 +83,170 @@ export default new Router({
 })
 
 export const asyncRouterMap = [
+  dashboardRouter,
+  mobileRouter,
+  agentRouter,
+  cardRouter,
+  businessRouter,
+  financeRouter,
+  batchRouter,
+  developmentRouter,
   {
-    path: '/permission',
+    path: '/home',
     component: Layout,
-    redirect: '/permission/index',
-    alwaysShow: true, // will always show the root menu
-    meta: {
-      title: 'permission',
-      icon: 'lock',
-      roles: ['admin', 'editor'] // you can set roles in root nav
-    },
-    children: [{
-      path: 'page',
-      component: _import('permission/page'),
-      name: 'pagePermission',
-      meta: {
-        title: 'pagePermission',
-        roles: ['admin', 1] // or you can only set roles in sub nav
+    children: [
+      {
+        path: 'home',
+        component: () => import('@/views/mobile/home'),
+        name: 'home',
+        meta: { title: '首页', roles: ['kuyuplat:analyzer:payinfo', 'kuyuplat:analyzer:cardoper', 'kuyuplat:analyzer:cardstatus', 'kuyuplat:analyzer:actinfo', 'uyuplat:notice:search',
+          'kuyuplat:analyzer:actinfo', 'kuyuplat:analyzer:paydayinfo', 'kuyuplat:analyzer:agentinfo', 'kuyuplat:analyzer:wxinfo', 'kuyuplat:analyzer:wxdayinfo'], noCache: true }
       }
-    }, {
-      path: 'directive',
-      component: _import('permission/directive'),
-      name: 'directivePermission',
-      meta: {
-        title: 'directivePermission',
-        roles: [9]
-        // if do not set roles, means: this page does not require permission
-      }
-    }]
+    ],
+    hidden: true
   },
-
   {
-    path: '/icon',
+    path: '/operateList',
     component: Layout,
-    children: [{
-      path: 'index',
-      component: _import('svg-icons/index'),
-      name: 'icons',
-      meta: { title: 'icons', icon: 'icon', noCache: true }
-    }]
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/business/operateList'),
+        name: 'OperateList',
+        meta: { title: 'operateList', roles: ['kuyuplat:work:search'], noCache: true }
+      }
+    ],
+    hidden: true
   },
-
   {
-    path: '/components',
+    path: '/weChat',
+    name: 'WeChat',
     component: Layout,
     redirect: 'noredirect',
-    name: 'component-demo',
-    meta: {
-      title: 'components',
-      icon: 'component',
-      roles: [8]
-    },
-    children: [
-      { path: 'tinymce', component: _import('components-demo/tinymce'), name: 'tinymce-demo', meta: { title: 'tinymce', roles: [21] }},
-      { path: 'markdown', component: _import('components-demo/markdown'), name: 'markdown-demo', meta: { title: 'markdown' }},
-      { path: 'json-editor', component: _import('components-demo/jsonEditor'), name: 'jsonEditor-demo', meta: { title: 'jsonEditor' }},
-      { path: 'dnd-list', component: _import('components-demo/dndList'), name: 'dndList-demo', meta: { title: 'dndList' }},
-      { path: 'splitpane', component: _import('components-demo/splitpane'), name: 'splitpane-demo', meta: { title: 'splitPane' }},
-      { path: 'avatar-upload', component: _import('components-demo/avatarUpload'), name: 'avatarUpload-demo', meta: { title: 'avatarUpload' }},
-      { path: 'dropzone', component: _import('components-demo/dropzone'), name: 'dropzone-demo', meta: { title: 'dropzone' }},
-      { path: 'sticky', component: _import('components-demo/sticky'), name: 'sticky-demo', meta: { title: 'sticky' }},
-      { path: 'count-to', component: _import('components-demo/countTo'), name: 'countTo-demo', meta: { title: 'countTo' }},
-      { path: 'mixin', component: _import('components-demo/mixin'), name: 'componentMixin-demo', meta: { title: 'componentMixin' }},
-      { path: 'back-to-top', component: _import('components-demo/backToTop'), name: 'backToTop-demo', meta: { title: 'backToTop' }},
-      { path: 'drag-dialog', component: _import('components-demo/dragDialog'), name: 'dragDialog-demo', meta: { title: 'dragDialog' }},
-      { path: 'drag-kanban', component: _import('components-demo/dragKanban'), name: 'dragKanban-demo', meta: { title: 'dragKanban' }}
-    ]
-  },
-
-  {
-    path: '/charts',
-    component: Layout,
-    redirect: 'noredirect',
-    name: 'charts',
-    meta: {
-      title: 'charts',
-      icon: 'chart'
-    },
-    children: [
-      { path: 'keyboard', component: _import('charts/keyboard'), name: 'keyboardChart', meta: { title: 'keyboardChart', noCache: true }},
-      { path: 'line', component: _import('charts/line'), name: 'lineChart', meta: { title: 'lineChart', noCache: true }},
-      { path: 'mixchart', component: _import('charts/mixChart'), name: 'mixChart', meta: { title: 'mixChart', noCache: true }}
-    ]
-  },
-
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table/complex-table',
-    name: 'example',
-    meta: {
-      title: 'example',
-      icon: 'example'
+    meta: { title: 'weChat',
+      icon: 'wechat',
+      roles: [
+        'kuyuplat:wx:getcfg', 'kuyuplat:menu:list', 'kuyuplat:autoreply:list', 'kuyuplat:fansinfo:list',
+        'kuyuplat:excel:sendMessage', 'kuyuplat:weixin:sendMessage', 'kuyuplat:weixin:modelFind'
+      ]
     },
     children: [
       {
-        path: '/example/table',
-        component: _import('example/table/index'),
-        redirect: '/example/table/complex-table',
-        name: 'Table',
-        meta: {
-          title: 'Table',
-          icon: 'table'
-        },
-        children: [
-          { path: 'dynamic-table', component: _import('example/table/dynamicTable/index'), name: 'dynamicTable', meta: { title: 'dynamicTable' }},
-          { path: 'drag-table', component: _import('example/table/dragTable'), name: 'dragTable', meta: { title: 'dragTable' }},
-          { path: 'inline-edit-table', component: _import('example/table/inlineEditTable'), name: 'inlineEditTable', meta: { title: 'inlineEditTable' }},
-          { path: 'tree-table', component: _import('example/table/treeTable/treeTable'), name: 'treeTableDemo', meta: { title: 'treeTable' }},
-          { path: 'custom-tree-table', component: _import('example/table/treeTable/customTreeTable'), name: 'customTreeTableDemo', meta: { title: 'customTreeTable' }},
-          { path: 'complex-table', component: _import('example/table/complexTable'), name: 'complexTable', meta: { title: 'complexTable' }}
-        ]
+        path: 'setting',
+        component: () => import('@/views/weChat/setting'),
+        name: 'WeChatSetting',
+        meta: { title: 'weChatSetting', roles: ['kuyuplat:wx:getcfg'] }
       },
-      { path: 'tab/index', icon: 'tab', component: _import('example/tab/index'), name: 'tab', meta: { title: 'tab' }}
+      {
+        path: 'menu',
+        component: () => import('@/views/weChat/menu'),
+        name: 'WeChatMenu',
+        meta: { title: 'weChatMenu', roles: ['kuyuplat:menu:list'] }
+      },
+      {
+        path: 'keyWord',
+        component: () => import('@/views/weChat/keyWord'),
+        name: 'WeChatKeyWord',
+        meta: { title: 'weChatKeyWord', roles: ['kuyuplat:autoreply:list'] }
+      },
+      {
+        path: 'keyWordDetails',
+        component: () => import('@/views/weChat/keyWordDetails'),
+        name: 'KeyWordDetails',
+        meta: { title: '图文回复', roles: ['kuyuplat:autoreply:list'] },
+        hidden: true
+      },
+      {
+        path: 'fans',
+        component: () => import('@/views/weChat/fans'),
+        name: 'WeChatFans',
+        meta: { title: 'weChatFans', roles: ['kuyuplat:fansinfo:list'] }
+      },
+      {
+        path: 'sendWechat',
+        component: () => import('@/views/weChat/sendWechat'),
+        name: 'SendWechat',
+        meta: { title: 'sendWechat', roles: ['kuyuplat:excel:sendMessage', 'kuyuplat:weixin:sendMessage'] }
+      },
+      {
+        path: 'wechatModel',
+        component: () => import('@/views/weChat/wechatModel'),
+        name: 'WechatModel',
+        meta: { title: '微信消息模版', roles: ['kuyuplat:weixin:modelFind'] }
+      }
     ]
   },
 
   {
-    path: '/form',
+    path: '/sms',
     component: Layout,
+    name: 'sms',
     redirect: 'noredirect',
-    name: 'form',
     meta: {
-      title: 'form',
-      icon: 'form'
+      title: 'sms',
+      icon: 'email',
+      roles: ['kuyuplat:sms:list', 'kuyuplat:instruct:list']
     },
     children: [
-      { path: 'create-form', component: _import('form/create'), name: 'createForm', meta: { title: 'createForm', icon: 'table' }},
-      { path: 'edit-form', component: _import('form/edit'), name: 'editForm', meta: { title: 'editForm', icon: 'table' }}
+      {
+        path: 'instruct',
+        component: () => import('@/views/sms/instruct'),
+        name: 'SmsCommand',
+        meta: { title: 'smsCommand', roles: ['kuyuplat:sms:list'] }
+      },
+      {
+        path: 'list',
+        component: () => import('@/views/sms/list'),
+        name: 'SmsManage',
+        meta: { title: 'smsManage', roles: ['kuyuplat:instruct:list'] }
+      }
     ]
   },
-
+  vpdnRouter,
   {
-    path: '/error',
+    path: '/hardware',
     component: Layout,
     redirect: 'noredirect',
-    name: 'errorPages',
+    name: 'hardware',
     meta: {
-      title: 'errorPages',
-      icon: '404'
+      title: 'hardware',
+      icon: 'window-restore',
+      roles: [
+        'kuyuplat:mifi:list'
+      ]
     },
     children: [
-      { path: '401', component: _import('errorPage/401'), name: 'page401', meta: { title: 'page401', noCache: true }},
-      { path: '404', component: _import('errorPage/404'), name: 'page404', meta: { title: 'page404', noCache: true }}
+      {
+        path: 'mifi',
+        component: () => import('@/views/hardware/mifi'),
+        name: 'HardwareMifi',
+        meta: { title: 'hardwareMifi', icon: 'hardware', roles: ['kuyuplat:mifi:list'] }
+      }
     ]
   },
+  otherRouter,
 
-  {
-    path: '/error-log',
-    component: Layout,
-    redirect: 'noredirect',
-    children: [{ path: 'log', component: _import('errorLog/index'), name: 'errorLog', meta: { title: 'errorLog', icon: 'bug' }}]
-  },
-
-  {
-    path: '/excel',
-    component: Layout,
-    redirect: '/excel/export-excel',
-    name: 'excel',
-    meta: {
-      title: 'excel',
-      icon: 'excel'
-    },
-    children: [
-      { path: 'export-excel', component: _import('excel/exportExcel'), name: 'exportExcel', meta: { title: 'exportExcel' }},
-      { path: 'export-selected-excel', component: _import('excel/selectExcel'), name: 'selectExcel', meta: { title: 'selectExcel' }},
-      { path: 'upload-excel', component: _import('excel/uploadExcel'), name: 'uploadExcel', meta: { title: 'uploadExcel' }}
-    ]
-  },
-
-  {
-    path: '/zip',
-    component: Layout,
-    redirect: '/zip/download',
-    alwaysShow: true,
-    meta: { title: 'zip', icon: 'zip' },
-    children: [{ path: 'download', component: _import('zip/index'), name: 'exportZip', meta: { title: 'exportZip' }}]
-  },
-
-  {
-    path: '/theme',
-    component: Layout,
-    redirect: 'noredirect',
-    children: [{ path: 'index', component: _import('theme/index'), name: 'theme', meta: { title: 'theme', icon: 'theme' }}]
-  },
-
-  {
-    path: '/clipboard',
-    component: Layout,
-    redirect: 'noredirect',
-    children: [{ path: 'index', component: _import('clipboard/index'), name: 'clipboardDemo', meta: { title: 'clipboardDemo', icon: 'clipboard' }}]
-  },
-
-  {
-    path: '/i18n',
-    component: Layout,
-    children: [{ path: 'index', component: _import('i18n-demo/index'), name: 'i18n', meta: { title: 'i18n', icon: 'international' }}]
-  },
+  // {
+  //   path: '/guide',
+  //   component: Layout,
+  //   name: 'guide',
+  //   redirect: 'noredirect',
+  //   children: [
+  //     {
+  //       path: 'guide',
+  //       component: () => import('@/views/guide/index'),
+  //       name: 'Guide',
+  //       meta: { title: 'guide', icon: 'question' }
+  //     },
+  //     {
+  //       path: '/nouns',
+  //       component: () => import('@/views/guide/nouns'),
+  //       name: 'Nouns',
+  //       meta: { title: 'nouns' },
+  //       hidden: true
+  //     }
+  //   ]
+  // },
 
   { path: '*', redirect: '/404', hidden: true }
 ]

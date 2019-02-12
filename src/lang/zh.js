@@ -1,63 +1,83 @@
 export default {
   route: {
     dashboard: '首页',
-    introduction: '简述',
-    documentation: '文档',
-    permission: '权限测试页',
-    pagePermission: '页面权限',
-    directivePermission: '指令权限',
-    icons: '图标',
-    components: '组件',
-    componentIndex: '介绍',
-    tinymce: '富文本编辑器',
-    markdown: 'Markdown',
-    jsonEditor: 'JSON编辑器',
-    dndList: '列表拖拽',
-    splitPane: 'Splitpane',
-    avatarUpload: '头像上传',
-    dropzone: 'Dropzone',
-    sticky: 'Sticky',
-    countTo: 'CountTo',
-    componentMixin: '小组件',
-    backToTop: '返回顶部',
-    dragDialog: '拖拽 Dialog',
-    dragKanban: '可拖拽看板',
-    charts: '图表',
-    keyboardChart: '键盘图表',
-    lineChart: '折线图',
-    mixChart: '混合图表',
-    example: '综合实例',
-    Table: 'Table',
-    dynamicTable: '动态Table',
-    dragTable: '拖拽Table',
-    inlineEditTable: 'Table内编辑',
-    complexTable: '综合Table',
-    treeTable: '树形表格',
-    customTreeTable: '自定义树表',
-    tab: 'Tab',
-    form: '表单',
-    createForm: '创建表单',
-    editForm: '编辑表单',
-    errorPages: '错误页面',
-    page401: '401',
-    page404: '404',
-    errorLog: '错误日志',
-    excel: 'Excel',
-    exportExcel: 'Export Excel',
-    selectExcel: 'Export Selected',
-    uploadExcel: 'Upload Excel',
-    zip: 'Zip',
-    exportZip: 'Export Zip',
-    theme: '换肤',
-    clipboardDemo: 'Clipboard',
-    i18n: '国际化'
+    noticeList: '公告列表',
+    notice: '公告详情',
+
+    agent: '代理商管理',
+    agentManage: '代理商信息管理',
+    agentAmount: '代理商余额管理',
+    agentPackage: '代理商套餐管理',
+    agentper: '代理商比例管理',
+
+    card: '卡片管理',
+    cardManage: '卡片信息管理',
+    autonymCard: '实名认证',
+    poolDayDetail: '流量池每日明细',
+    divideCard: '分卡',
+    backCard: '卡片回收',
+
+    business: '业务管理',
+    supplier: '供应商管理',
+    package: '套餐管理',
+    flowInfo: '流量查询',
+    orderPackage: '套餐订购',
+    stopReset: '停复机',
+    changeCard: '换卡管理',
+    unbind: '机卡解绑',
+    operateList: '操作记录',
+    workOrder: '工单管理',
+    active: '活动管理',
+    hunanList: '湖南监控查询',
+    orderPackageMore: '批量订购套餐',
+    unbindAction: '机卡解绑操作',
+    changePackage: '异卡换套餐',
+    changePackageAction: '异卡换套餐操作',
+    excelWorkOrder: 'Excel工单提交',
+
+    finance: '财务管理',
+    orderFlow: '订单查询',
+    amountOrder: '余额查询',
+    commission: '佣金查询',
+    withdraw: '提现管理',
+    payList: '支付记录',
+
+    weChat: '微信管理',
+    weChatSetting: '微信配置',
+    weChatMenu: '自定义菜单',
+    weChatKeyWord: '关键字回复',
+    weChatService: '客服回答',
+    weChatFans: '粉丝管理',
+
+    sms: '短信管理',
+    smsCommand: '指令模块',
+    smsManage: '短信管理',
+
+    hardware: '硬件管理',
+    hardwareMifi: 'MIFI管理',
+
+    other: '其他',
+    API: 'API下载',
+    sendWechat: '发送微信消息',
+    upstreamSupplier: '上游供应商登陆',
+    generalize: '推广',
+    announce: '发布公告',
+    export: '鑫继源导出',
+    jurisdiction: '权限管理',
+    batchOperation: '批量操作',
+    developmentEntrance: '开发入口',
+
+    guide: '引导页',
+    nouns: '名词解释'
+
   },
   navbar: {
     logOut: '退出登录',
     dashboard: '首页',
     github: '项目地址',
     screenfull: '全屏',
-    theme: '换肤'
+    theme: '换肤',
+    size: '布局大小'
   },
   login: {
     title: '系统登录',
@@ -74,7 +94,12 @@ export default {
   },
   permission: {
     roles: '你的权限',
-    switchRoles: '切换权限'
+    switchRoles: '切换权限',
+    tips: '在某些情况下，不适合使用 v-permission。例如：Element-UI 的 Tab 组件或 el-table-column 以及其它动态渲染 dom 的场景。你只能通过手动设置 v-if 来实现。'
+  },
+  guide: {
+    description: '引导页对于一些第一次进入项目的人很有用，你可以简单介绍下项目的功能。本 Demo 是基于',
+    button: '打开引导'
   },
   components: {
     documentation: '文档',
@@ -125,12 +150,16 @@ export default {
     export: '导出',
     placeholder: '请输入文件名(默认file)'
   },
+  pdf: {
+    tips: '这里使用   window.print() 来实现下载pdf的功能'
+  },
   theme: {
     change: '换肤',
     documentation: '换肤文档',
     tips: 'Tips: 它区别于 navbar 上的 theme-pick, 是两种不同的换肤方法，各自有不同的应用场景，具体请参考文档。'
   },
   tagsView: {
+    refresh: '刷新',
     close: '关闭',
     closeOthers: '关闭其它',
     closeAll: '关闭所有'

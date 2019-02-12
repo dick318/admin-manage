@@ -1,23 +1,26 @@
 <template>
-  <div class="tinymce-container editor-container" :class="{fullscreen:fullscreen}">
-    <textarea class="tinymce-textarea" :id="tinymceId"></textarea>
-    <div class="editor-custom-btn-container">
-      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK"></editorImage>
-    </div>
+  <div :class="{fullscreen:fullscreen}" class="tinymce-container editor-container">
+    <textarea :id="tinymceId" class="tinymce-textarea"/>
+    <!-- <div class="editor-custom-btn-container">
+      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK"/>
+    </div> -->
   </div>
 </template>
 
 <script>
-import editorImage from './components/editorImage'
+// import editorImage from './components/editorImage'
 import plugins from './plugins'
 import toolbar from './toolbar'
-
+import { uploadFile } from '@/utils'
 export default {
-  name: 'tinymce',
-  components: { editorImage },
+  name: 'Tinymce',
+  // components: { editorImage },
   props: {
     id: {
-      type: String
+      type: String,
+      default: function() {
+        return 'vue-tinymce-' + +new Date() + ((Math.random() * 1000).toFixed(0) + '')
+      }
     },
     value: {
       type: String,
@@ -31,6 +34,7 @@ export default {
       }
     },
     menubar: {
+      type: String,
       default: 'file edit insert view format table'
     },
     height: {
@@ -43,15 +47,30 @@ export default {
     return {
       hasChange: false,
       hasInit: false,
-      tinymceId: this.id || 'vue-tinymce-' + +new Date(),
-      fullscreen: false
+      globalcounter: 1,
+      tinymceId: this.id,
+      fullscreen: false,
+      languageTypeList: {
+        'en': 'en',
+        'zh': 'zh_CN'
+      }
+    }
+  },
+  computed: {
+    language() {
+      return this.languageTypeList[this.$store.getters.language]
     }
   },
   watch: {
     value(val) {
       if (!this.hasChange && this.hasInit) {
-        this.$nextTick(() => window.tinymce.get(this.tinymceId).setContent(val))
+        this.$nextTick(() =>
+          window.tinymce.get(this.tinymceId).setContent(val || ''))
       }
+    },
+    language() {
+      this.destroyTinymce()
+      this.$nextTick(() => this.initTinymce())
     }
   },
   mounted() {
@@ -63,19 +82,49 @@ export default {
   deactivated() {
     this.destroyTinymce()
   },
+  destroyed() {
+    this.destroyTinymce()
+  },
   methods: {
     initTinymce() {
       const _this = this
       window.tinymce.init({
+        language: this.language,
         selector: `#${this.tinymceId}`,
         height: this.height,
         body_class: 'panel-body ',
-        object_resizing: false,
+        object_resizing: true,
+        fontsize_formats: '8pt 10pt 12pt 14pt 18pt 24pt 36pt',
         toolbar: this.toolbar.length > 0 ? this.toolbar : toolbar,
         menubar: this.menubar,
         plugins: plugins,
         end_container_on_empty_block: true,
+        resize: false,
+        theme: 'modern',
+        autosave_ask_before_unload: false,
+        codesample_dialog_width: 600,
+        codesample_dialog_height: 425,
+        template_popup_height: 450,
+        template_popup_width: 600,
+        powerpaste_allow_local_images: true,
+        paste_data_images: true,
+        images_upload_handler: (blobInfo, success, failure) => {
+          const fd = new FormData()
+          fd.append('file', blobInfo.blob())
+          fd.append('target', 'sekill')
+          uploadFile('http://39.108.19.148:8766/tool/file/upload', fd).then(res => {
+            this.$message({
+              type: +res.status === 0 ? 'success' : 'error',
+              message: res.message,
+              duration: 2000
+            })
+            if (res.status === 0) {
+              success(`${res.data}`)
+            }
+          })
+        },
         powerpaste_word_import: 'clean',
+        powerpaste_html_import: 'propmt',
         code_dialog_height: 450,
         code_dialog_width: 1000,
         advlist_bullet_styles: 'square',
@@ -83,6 +132,7 @@ export default {
         imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
         default_link_target: '_blank',
         link_title: false,
+        nonbreaking_force_tab: true, // inserting nonbreaking space &nbsp; need Nonbreaking Space Plugin
         init_instance_callback: editor => {
           if (_this.value) {
             editor.setContent(_this.value)
@@ -134,8 +184,13 @@ export default {
       })
     },
     destroyTinymce() {
-      if (window.tinymce.get(this.tinymceId)) {
-        window.tinymce.get(this.tinymceId).destroy()
+      const tinymce = window.tinymce.get(this.tinymceId)
+      if (this.fullscreen) {
+        tinymce.execCommand('mceFullScreen')
+      }
+
+      if (tinymce) {
+        tinymce.destroy()
       }
     },
     setContent(value) {
@@ -150,9 +205,6 @@ export default {
         window.tinymce.get(_this.tinymceId).insertContent(`<img class="wscnph" src="${v.url}" >`)
       })
     }
-  },
-  destroyed() {
-    this.destroyTinymce()
   }
 }
 </script>
@@ -160,6 +212,7 @@ export default {
 <style scoped>
 .tinymce-container {
   position: relative;
+  line-height: normal;
 }
 .tinymce-container>>>.mce-fullscreen {
   z-index: 10000;

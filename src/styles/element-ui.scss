@@ -1,5 +1,74 @@
  //覆盖一些element-ui样式
+ .el-table td {
+  width: min-content;
+  white-space: nowrap !important;
+}
+.el-tooltip__popper {
+  max-width: 350px;
+  line-height: 180%;
+  word-break:break-all;
+  padding: 15px;
+}
+.el-dialog__body{
+  text-align: center;
+}
+.sortable-ghost {
+  opacity: 0.8;
+  color: #fff !important;
+  background: #42b983 !important;
+}
+.el-pagination{
+  white-space: inherit!important;
+}
+.el-table .cell {
+  word-break: keep-all;
+}
+.el-pagination__sizes{
+  padding-bottom: 40px;
+}
+.el-dialog__body .el-input{
+  width: 200px !important;
+}
 
+::-webkit-input-placeholder{
+  color: #909399!important;
+}
+::-moz-placeholder{  
+  color: #909399!important;        
+}
+:-ms-input-placeholder{  
+  color: #909399!important;        
+}
+ @media screen and (max-width: 768px) {
+  .el-form-item__content {
+    margin-left: 0 !important;
+  }
+  .query-form-item.el-form-item {
+      display: block !important;
+      margin-right: 0;
+      margin-bottom: 10px;
+  }
+  .query-form-item .el-form-item__content {
+      width: 100%;
+      .el-select {
+          width: 100%;
+      }
+  }
+  .el-dialog {
+      width: 91%;
+  }
+
+  .el-message {
+      min-width: 70% !important;
+  }
+  .el-message-box{
+    width: 91%;
+  }
+  .el-form-item__label{
+    text-align: left;
+    white-space: nowrap;
+  }
+}
  .el-breadcrumb__inner, .el-breadcrumb__inner a{
   font-weight: 400!important;
 }
@@ -79,4 +148,31 @@
   a{
     display: block
   }
+}
+.select2-result-repository {
+  padding-top: 6px;
+  padding-bottom: 3px;
+}
+.select2-result-repository__avatar {
+  float: left;
+  width: 60px;
+  margin-right: 10px;
+}
+.select2-result-repository__meta {
+  margin-left: 70px;
+}
+.select2-result-repository__avatar img {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+.select2-result-repository__title {
+  color: black;
+  font-weight: 700;
+  word-wrap: break-word;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.select2-result-repository__statistics {
+  margin-top: 6px;
 }

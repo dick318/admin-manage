@@ -1,23 +1,38 @@
 <template>
-  <div class="login-container">
-    <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
+  <div :style="bgImg" class="login-container">
+
+    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="right">
+
       <div class="title-container">
-        <h3 class="title">{{$t('login.title')}}</h3>
-        <lang-select class="set-language"></lang-select>
+        <h3 class="title">{{ $t('login.title') }}</h3>
+        <!-- <lang-select class="set-language"/> -->
       </div>
+
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
         </span>
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="用户名" />
+        <el-input
+          v-model.trim="loginForm.username"
+          :placeholder="$t('login.username')"
+          name="username"
+          type="text"
+          auto-complete="on"
+        />
       </el-form-item>
 
       <el-form-item prop="password">
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
-        <el-input name="password" :type="passwordType" v-model="loginForm.password" autoComplete="on" placeholder="密码" />
-         <span class="show-pwd" @click="showPwd">
+        <el-input
+          :type="passwordType"
+          v-model.trim="loginForm.password"
+          :placeholder="$t('login.password')"
+          name="password"
+          auto-complete="on"
+          @keyup.enter.native="handleLogin" />
+        <span class="show-pwd" @click="showPwd">
           <svg-icon icon-class="eye" />
         </span>
       </el-form-item>
@@ -25,31 +40,31 @@
         <span class="svg-container">
           <svg-icon icon-class="captcha" />
         </span>
-        <el-input name="captcha"  @keyup.enter.native="handleLogin" v-model="loginForm.captcha" autoComplete="off" placeholder="验证码" />
-        <span class="show-pwd"  @click="changeCapt">
-          <img v-model="loginForm.captcha" v-bind:src='captcha.url' class="image">
+        <el-input v-model.trim="loginForm.captcha" name="captcha" auto-complete="off" placeholder="验证码" @keyup.enter.native="handleLogin" />
+        <span class="show-captcha" @click="changeCapt">
+          <img :src="captcha.url" class="image">
         </span>
       </el-form-item>
 
-      <el-button type="primary" style="width:100%;margin-bottom:30px;" :loading="loading" @click.native.prevent="handleLogin">{{$t('login.logIn')}}</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">{{ $t('login.logIn') }}</el-button>
 
-      <div class="tips">
-        <span>{{$t('login.username')}} : admin</span>
-        <span>{{$t('login.password')}} : {{$t('login.any')}}</span>
+      <!-- <div class="tips">
+        <span>{{ $t('login.username') }} : admin</span>
+        <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
       </div>
       <div class="tips">
-        <span style="margin-right:18px;">{{$t('login.username')}} : editor</span>
-        <span>{{$t('login.password')}} : {{$t('login.any')}}</span>
+        <span style="margin-right:18px;">{{ $t('login.username') }} : editor</span>
+        <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
       </div>
 
-      <el-button class="thirdparty-button" type="primary" @click="showDialog=true">{{$t('login.thirdparty')}}</el-button>
+      <el-button class="thirdparty-button" type="primary" @click="showDialog=true">{{ $t('login.thirdparty') }}</el-button> -->
     </el-form>
 
     <el-dialog :title="$t('login.thirdparty')" :visible.sync="showDialog" append-to-body>
-      {{$t('login.thirdpartyTips')}}
-      <br/>
-      <br/>
-      <br/>
+      {{ $t('login.thirdpartyTips') }}
+      <br>
+      <br>
+      <br>
       <social-sign />
     </el-dialog>
 
@@ -57,14 +72,14 @@
 </template>
 
 <script>
-import { validateAlphabets } from '@/utils/validate'
-import LangSelect from '@/components/LangSelect'
-import SocialSign from './socialsignin'
-import { getCaptcha, getCaptchaRefresh } from '@/api/login'
-
+// import LangSelect from '@/components/LangSelect'
+// import SocialSign from './socialsignin'
+import { getCode } from '@/api/login'
+import Cookies from 'js-cookie'
+import logo from '@/assets/logo.jpg'
 export default {
-  components: { LangSelect, SocialSign },
-  name: 'login',
+  name: 'Login',
+  // components: { LangSelect, SocialSign },
   data() {
     const validateUsername = (rule, value, callback) => {
       if (!value) {
@@ -83,22 +98,31 @@ export default {
     const validateCaptcha = (rule, value, callback) => {
       if (!value) {
         callback(new Error('请输入验证码'))
-      } else if (!validateAlphabets(value)) {
-        callback(new Error('请正确的验证码'))
+      } else if (value.length !== 4) {
+        callback(new Error('验证码长度错误'))
       } else {
         callback()
       }
     }
     return {
+      bgImg: {
+        'background-image': `url(${logo})`
+      },
       loginForm: {
-        username: 'ceshiquanxian001',
-        password: 'ceshiquanxian001',
+        username: Cookies.get('username') || localStorage.getItem('username') || '',
+        password: Cookies.get('password') || localStorage.getItem('password') || '',
         captcha: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
-        captcha: [{ required: true, trigger: 'blur', validator: validateCaptcha }]
+        username: [
+          { required: true, trigger: 'blur', validator: validateUsername }
+        ],
+        password: [
+          { required: true, trigger: 'blur', validator: validatePassword }
+        ],
+        captcha: [
+          { required: true, trigger: 'blur', validator: validateCaptcha }
+        ]
       },
       captcha: {
         base: '',
@@ -110,22 +134,25 @@ export default {
       showDialog: false
     }
   },
+  created() {
+    this.getCaptcha()
+    // window.addEventListener('hashchange', this.afterQRScan)
+  },
+  destroyed() {
+    // window.removeEventListener('hashchange', this.afterQRScan)
+  },
   methods: {
     changeCapt() {
-      console.log(`第二步获取验证码刷新链接${this.captcha.base}&refresh`)
-      getCaptchaRefresh(`${this.captcha.base}&refresh`).then(response => {
-        this.captcha.base = response.url
-        this.captcha.url = document.location.host === 'localhost:8080' ? `http://wx.szcoolfish.com${response.url}` : `${document.location.protocol}//${window.location.host}${response.url}`
-      })
+      this.getCaptcha()
     },
     getCaptcha() {
-      getCaptcha().then(response => {
+      getCode().then(res => {
+        if (+res.status !== 0) {
+          return false
+        }
         const _this = this
-        response.data.img.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function(match, capture) {
-          _this.captcha.base = capture
-          console.log(`第一步获取验证码${capture}`)
-          _this.captcha.url = document.location.host === 'localhost:8080' ? `http://wx.szcoolfish.com${capture}` : `${document.location.protocol}//${window.location.host}${capture}`
-        })
+        _this.captcha.url = res.data.img
+        Cookies.set('token', res.data.JSESSIONID)
       })
     },
     showPwd() {
@@ -139,12 +166,25 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('LoginByUsername', this.loginForm).then(() => {
-            this.loading = false
-            this.$router.push({ path: '/' })
-          }).catch(() => {
-            this.loading = false
-          })
+          this.$store
+            .dispatch('LoginByUsername', this.loginForm)
+            .then(() => {
+              this.loading = false
+              Cookies.set('username', this.loginForm.username)
+              Cookies.set('password', this.loginForm.password)
+              localStorage.setItem('username', this.loginForm.username)
+              localStorage.setItem('password', this.loginForm.password)
+              if (this.$store.getters.device === 'mobile') {
+                this.$router.push({ path: '/mobile/home' })
+              } else {
+                this.$router.push({ path: '/' })
+              }
+            })
+            .catch(res => {
+              this.loginForm.captcha = ''
+              this.changeCapt()
+              this.loading = false
+            })
         } else {
           console.log('error submit!!')
           return false
@@ -169,72 +209,86 @@ export default {
       //   })
       // }
     }
-  },
-  created() {
-    this.getCaptcha()
-    // window.addEventListener('hashchange', this.afterQRScan)
-  },
-  destroyed() {
-    // window.removeEventListener('hashchange', this.afterQRScan)
   }
 }
 </script>
 
 <style rel="stylesheet/scss" lang="scss">
-$bg:#2d3a4b;
-$light_gray:#eee;
+/* 修复input 背景不协调 和光标变色 */
+/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
+
+$bg: #283443;
+$light_gray: #eee;
+$cursor: #fff;
+
+@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
+  .login-container .el-input input {
+    color: $cursor;
+    &::first-line {
+      color: $light_gray;
+    }
+  }
+}
 
 /* reset element-ui css */
 .login-container {
   .el-input {
     display: inline-block;
     height: 47px;
-    width: 85%;
+    width: 70%;
     input {
       background: transparent;
       border: 0px;
       -webkit-appearance: none;
       border-radius: 0px;
-      padding: 12px 5px 12px 15px;
+      padding: 0.46rem 0.5rem 0.46rem 0.5rem;
       color: $light_gray;
-      height: 47px;
+      height: 100%;
+      caret-color: $cursor;
       &:-webkit-autofill {
         -webkit-box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: #fff !important;
+        -webkit-text-fill-color: $cursor !important;
       }
     }
   }
   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
+    border-radius: 0.0666rem;
     color: #454545;
+    padding-right:1rem;
+    padding-left:1rem;
   }
 }
 </style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
-
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 .login-container {
   position: fixed;
   height: 100%;
   width: 100%;
   background-color: $bg;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x:center;
+  background-position-y:center;
+  background-size: cover;
+  background-attachment: fixed;
   .login-form {
     position: absolute;
-    left: 0;
-    right: 0;
-    width: 520px;
-    padding: 35px 35px 15px 35px;
-    margin: 120px auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    width: 22em;
+    // padding: 0.4666rem 0.4666rem 0.2rem 0.4666rem;
   }
   .tips {
     font-size: 14px;
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 0.13333rem;
     span {
       &:first-of-type {
         margin-right: 16px;
@@ -242,10 +296,9 @@ $light_gray:#eee;
     }
   }
   .svg-container {
-    padding: 6px 5px 6px 15px;
+    padding: 0.08rem 0.0666rem 0.08rem 0.2rem;
     color: $dark_gray;
     vertical-align: middle;
-    width: 30px;
     display: inline-block;
     &_login {
       font-size: 20px;
@@ -255,32 +308,35 @@ $light_gray:#eee;
     position: relative;
     .title {
       font-size: 26px;
-      font-weight: 400;
       color: $light_gray;
-      margin: 0px auto 40px auto;
+      margin: 0 auto 0.5333rem auto;
       text-align: center;
       font-weight: bold;
     }
     .set-language {
       color: #fff;
       position: absolute;
-      top: 5px;
+      top: 0.0666rem;
       right: 0px;
     }
   }
-  .show-pwd {
+  .show-pwd ,.show-captcha {
     position: absolute;
-    right: 10px;
-    top: 7px;
+    right: 0.1333rem;
+    top: 0.09333rem;
     font-size: 16px;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
   }
+  .show-pwd{
+    right: 0.75rem;
+    top: 0.625rem;
+  }
   .thirdparty-button {
     position: absolute;
-    right: 35px;
-    bottom: 28px;
+    right: .4666rem;
+    bottom: .37333rem;
   }
 }
 </style>

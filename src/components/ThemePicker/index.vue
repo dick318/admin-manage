@@ -1,8 +1,8 @@
 <template>
   <el-color-picker
+    v-model="theme"
     class="theme-picker"
-    popper-class="theme-picker-dropdown"
-    v-model="theme"></el-color-picker>
+    popper-class="theme-picker-dropdown"/>
 </template>
 
 <script>
@@ -18,7 +18,8 @@ export default {
     }
   },
   watch: {
-    theme(val, oldVal) {
+    theme(val) {
+      const oldVal = this.theme
       if (typeof val !== 'string') return
       const themeCluster = this.getThemeCluster(val.replace('#', ''))
       const originalCluster = this.getThemeCluster(oldVal.replace('#', ''))

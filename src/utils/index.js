@@ -1,7 +1,8 @@
 /**
- * Created by jiachenpan on 16/11/18.
+ * Created by xiewanlin on 16/11/18.
  */
-
+import axios from 'axios'
+import store from '@/store'
 export function parseTime(time, cFormat) {
   if (arguments.length === 0) {
     return null
@@ -25,7 +26,8 @@ export function parseTime(time, cFormat) {
   }
   const time_str = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key]
-    if (key === 'a') return ['一', '二', '三', '四', '五', '六', '日'][value - 1]
+    // Note: getDay() returns 0 on Sunday
+    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value ] }
     if (result.length > 0 && value < 10) {
       value = '0' + value
     }
@@ -43,7 +45,8 @@ export function formatTime(time, option) {
 
   if (diff < 30) {
     return '刚刚'
-  } else if (diff < 3600) { // less 1 hour
+  } else if (diff < 3600) {
+    // less 1 hour
     return Math.ceil(diff / 60) + '分钟前'
   } else if (diff < 3600 * 24) {
     return Math.ceil(diff / 3600) + '小时前'
@@ -53,7 +56,17 @@ export function formatTime(time, option) {
   if (option) {
     return parseTime(time, option)
   } else {
-    return d.getMonth() + 1 + '月' + d.getDate() + '日' + d.getHours() + '时' + d.getMinutes() + '分'
+    return (
+      d.getMonth() +
+      1 +
+      '月' +
+      d.getDate() +
+      '日' +
+      d.getHours() +
+      '时' +
+      d.getMinutes() +
+      '分'
+    )
   }
 }
 
@@ -81,9 +94,11 @@ export function getQueryObject(url) {
 export function getByteLen(val) {
   let len = 0
   for (let i = 0; i < val.length; i++) {
-    if (val[i].match(/[^\x00-\xff]/ig) != null) {
+    if (val[i].match(/[^\x00-\xff]/gi) != null) {
       len += 1
-    } else { len += 0.5 }
+    } else {
+      len += 0.5
+    }
   }
   return Math.floor(len)
 }
@@ -100,11 +115,12 @@ export function cleanArray(actual) {
 
 export function param(json) {
   if (!json) return ''
-  return cleanArray(Object.keys(json).map(key => {
-    if (json[key] === undefined) return ''
-    return encodeURIComponent(key) + '=' +
-            encodeURIComponent(json[key])
-  })).join('&')
+  return cleanArray(
+    Object.keys(json).map(key => {
+      if (json[key] === undefined) return ''
+      return encodeURIComponent(key) + '=' + encodeURIComponent(json[key])
+    })
+  ).join('&')
 }
 
 export function param2Obj(url) {
@@ -112,7 +128,14 @@ export function param2Obj(url) {
   if (!search) {
     return {}
   }
-  return JSON.parse('{"' + decodeURIComponent(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+  return JSON.parse(
+    '{"' +
+      decodeURIComponent(search)
+        .replace(/"/g, '\\"')
+        .replace(/&/g, '","')
+        .replace(/=/g, '":"') +
+      '"}'
+  )
 }
 
 export function html2Text(val) {
@@ -131,7 +154,7 @@ export function objectMerge(target, source) {
   if (Array.isArray(source)) {
     return source.slice()
   }
-  Object.keys(source).forEach((property) => {
+  Object.keys(source).forEach(property => {
     const sourceProperty = source[property]
     if (typeof sourceProperty === 'object') {
       target[property] = objectMerge(target[property], sourceProperty)
@@ -145,9 +168,8 @@ export function objectMerge(target, source) {
 export function scrollTo(element, to, duration) {
   if (duration <= 0) return
   const difference = to - element.scrollTop
-  const perTick = difference / duration * 10
+  const perTick = (difference / duration) * 10
   setTimeout(() => {
-    console.log(new Date())
     element.scrollTop = element.scrollTop + perTick
     if (element.scrollTop === to) return
     scrollTo(element, to, duration - 10)
@@ -163,7 +185,9 @@ export function toggleClass(element, className) {
   if (nameIndex === -1) {
     classString += '' + className
   } else {
-    classString = classString.substr(0, nameIndex) + classString.substr(nameIndex + className.length)
+    classString =
+      classString.substr(0, nameIndex) +
+      classString.substr(nameIndex + className.length)
   }
   element.className = classString
 }
@@ -177,7 +201,8 @@ export const pickerOptions = [
       end.setTime(start.getTime())
       picker.$emit('pick', [start, end])
     }
-  }, {
+  },
+  {
     text: '最近一周',
     onClick(picker) {
       const end = new Date(new Date().toDateString())
@@ -185,7 +210,8 @@ export const pickerOptions = [
       start.setTime(end.getTime() - 3600 * 1000 * 24 * 7)
       picker.$emit('pick', [start, end])
     }
-  }, {
+  },
+  {
     text: '最近一个月',
     onClick(picker) {
       const end = new Date(new Date().toDateString())
@@ -193,7 +219,8 @@ export const pickerOptions = [
       start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
       picker.$emit('pick', [start, end])
     }
-  }, {
+  },
+  {
     text: '最近三个月',
     onClick(picker) {
       const end = new Date(new Date().toDateString())
@@ -201,7 +228,8 @@ export const pickerOptions = [
       start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
       picker.$emit('pick', [start, end])
     }
-  }]
+  }
+]
 
 export function getTime(type) {
   if (type === 'start') {
@@ -246,14 +274,18 @@ export function debounce(func, wait, immediate) {
   }
 }
 
+/**
+ * This is just a simple version of deep copy
+ * Has a lot of edge cases bug
+ * If you want to use a perfect deep copy, use lodash's _.cloneDeep
+ */
 export function deepClone(source) {
   if (!source && typeof source !== 'object') {
     throw new Error('error arguments', 'shallowClone')
   }
   const targetObj = source.constructor === Array ? [] : {}
-  Object.keys(source).forEach((keys) => {
+  Object.keys(source).forEach(keys => {
     if (source[keys] && typeof source[keys] === 'object') {
-      targetObj[keys] = source[keys].constructor === Array ? [] : {}
       targetObj[keys] = deepClone(source[keys])
     } else {
       targetObj[keys] = source[keys]
@@ -261,3 +293,102 @@ export function deepClone(source) {
   })
   return targetObj
 }
+export function getCurrentMonthLast() {
+  var date = new Date()
+  var currentMonth = date.getMonth()
+  var nextMonth = ++currentMonth
+  var nextMonthFirstDay = new Date(date.getFullYear(), nextMonth, 1)
+  var oneDay = 1000 * 60 * 60 * 24
+  return new Date(nextMonthFirstDay - oneDay)
+}
+export function uniqueArr(arr) {
+  return Array.from(new Set(arr))
+}
+export function isExternal(path) {
+  return /^(https?:|mailto:|tel:)/.test(path)
+}
+export function toSize(a) {
+  var e = 1024
+  var m = [' B', ' KB', ' MB', ' GB']
+  for (var ml = 0; ml < m.length; ml++) {
+    if (Math.abs(a) < e) {
+      return (ml === 0 ? a : a.toFixed(2)) + m[ml]
+    }
+    a /= e
+  }
+}
+
+export function uploadFileFinally(url, param, moreData = {}) {
+  url = process.env.BASE_API + url
+  const config = {
+    headers: { 'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${store.getters.token}` }
+  }
+  const _file = param.file
+  const fd = new FormData()
+  fd.append('file', _file)
+  for (const [k, v] of Object.entries(moreData)) {
+    if (v || v === 0) {
+      fd.append(k, v)
+    }
+  }
+  fd.append('uid', store.getters.uid)
+  fd.append('did', store.getters.did)
+  return axios.post(url, fd, config)
+}
+export function sliceArray(array, size) {
+  var result = []
+  for (var x = 0; x < Math.ceil(array.length / size); x++) {
+    var start = x * size
+    var end = start + size
+    result.push(array.slice(start, end))
+  }
+  return result
+}
+export function uploadFile(url, data) {
+  // url = process.env.BASE_API + url
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${store.getters.token}`
+    }
+  }
+  data.append('uid', store.getters.uid)
+  data.append('did', store.getters.did)
+  return axios.post(url, data, config)
+}
+
+export function downloadFile(url, saveName) {
+  if (typeof url === 'object' && url instanceof Blob) {
+    url = URL.createObjectURL(url) // 创建blob地址
+  }
+  var aLink = document.createElement('a')
+  aLink.href = url
+  aLink.download = saveName || '' // HTML5新增的属性，指定保存文件名，可以不要后缀，注意，file:///模式下不会生效
+  var event
+  if (window.MouseEvent) event = new MouseEvent('click')
+  else {
+    event = document.createEvent('MouseEvents')
+    event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+  }
+  aLink.dispatchEvent(event)
+}
+
+export function arrayIsRepeat(arr, strict = false) {
+  var hash = {}
+  for (var i in arr) {
+    if (strict === true) {
+      if (hash[arr[i]] && hash[arr[i]] === arr[i]) {
+        return true
+      }
+      hash[arr[i]] = arr[i]
+    } else {
+      if (hash[arr[i]]) {
+        return true
+      }
+      hash[arr[i]] = true
+    }
+  }
+  return false
+}
+

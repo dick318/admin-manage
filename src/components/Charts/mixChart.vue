@@ -1,5 +1,13 @@
 <template>
-  <div :class="className" :id="id" :style="{height:height,width:width}"></div>
+  <div
+    :class="className"
+    :id="id"
+    :xData="xData"
+    :legendData="legendData"
+    :seriesData0="seriesData0"
+    :seriesData1="seriesData1"
+    :seriesData2="seriesData2"
+    :style="{height:height,width:width}"/>
 </template>
 
 <script>
@@ -24,11 +32,62 @@ export default {
     height: {
       type: String,
       default: '200px'
+    },
+    xData: {
+      type: Array,
+      required: true
+    },
+    legendData: {
+      type: Array,
+      required: true
+    },
+    seriesData0: {
+      type: Array,
+      required: true
+    },
+    seriesData1: {
+      type: Array,
+      required: true
+    },
+    seriesData2: {
+      type: Array,
+      required: true
     }
+
   },
   data() {
     return {
       chart: null
+    }
+  },
+  watch: {
+    xData: function(newData, oldData) {
+      this.chart.setOption({
+        xAxis: [{
+          data: this.xData
+        }]
+      })
+    },
+    seriesData0: function(newData, oldData) {
+      this.chart.setOption({
+        series: [{
+          data: this.seriesData0
+        }]
+      })
+    },
+    seriesData1: function(newData, oldData) {
+      this.chart.setOption({
+        series: [{}, {
+          data: this.seriesData1
+        }]
+      })
+    },
+    seriesData2: function(newData, oldData) {
+      this.chart.setOption({
+        series: [{}, {}, {
+          data: this.seriesData2
+        }]
+      })
     }
   },
   mounted() {
@@ -44,51 +103,29 @@ export default {
   methods: {
     initChart() {
       this.chart = echarts.init(document.getElementById(this.id))
-      const xData = (function() {
-        const data = []
-        for (let i = 1; i < 13; i++) {
-          data.push(i + 'month')
-        }
-        return data
-      }())
       this.chart.setOption({
-        backgroundColor: '#344b58',
-        title: {
-          text: 'statistics',
-          x: '20',
-          top: '20',
-          textStyle: {
-            color: '#fff',
-            fontSize: '22'
-          },
-          subtextStyle: {
-            color: '#90979c',
-            fontSize: '16'
-          }
-        },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
             textStyle: {
               color: '#fff'
             }
-          }
+          },
+          formatter: `{b} <br/>{a0} : {c0} MB<br/> {a1} : {c1} MB<br/>  {a2} : {c2} %`
         },
         grid: {
+          left: '5%',
+          right: '5%',
           borderWidth: 0,
-          top: 110,
-          bottom: 95,
           textStyle: {
             color: '#fff'
           }
         },
         legend: {
-          x: '5%',
-          top: '10%',
           textStyle: {
             color: '#90979c'
           },
-          data: ['female', 'male', 'average']
+          data: this.legendData
         },
         calculable: true,
         xAxis: [{
@@ -111,8 +148,9 @@ export default {
             interval: 0
 
           },
-          data: xData
+          data: this.xData
         }],
+
         yAxis: [{
           type: 'value',
           splitLine: {
@@ -132,80 +170,34 @@ export default {
           splitArea: {
             show: false
           }
-        }],
-        dataZoom: [{
-          show: true,
-          height: 30,
-          xAxisIndex: [
-            0
-          ],
-          bottom: 30,
-          start: 10,
-          end: 80,
-          handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
-          handleSize: '110%',
-          handleStyle: {
-            color: '#d3dee5'
-
+        },
+        {
+          type: 'value',
+          name: '使用率',
+          min: 0,
+          position: 'right',
+          axisLine: {
+            lineStyle: {
+              color: '#90979c'
+            }
           },
-          textStyle: {
-            color: '#fff' },
-          borderColor: '#90979c'
-
-        }, {
-          type: 'inside',
-          show: true,
-          height: 15,
-          start: 1,
-          end: 35
+          axisLabel: {
+            formatter: '{value} %'
+          }
         }],
         series: [{
-          name: 'female',
+          name: this.legendData[0],
           type: 'bar',
-          stack: 'total',
           barMaxWidth: 35,
-          barGap: '10%',
+          barGap: '-100%',
           itemStyle: {
             normal: {
               color: 'rgba(255,144,128,1)',
               label: {
                 show: true,
                 textStyle: {
-                  color: '#fff'
+                  color: 'rgba(255,144,128,1)'
                 },
-                position: 'insideTop',
-                formatter(p) {
-                  return p.value > 0 ? p.value : ''
-                }
-              }
-            }
-          },
-          data: [
-            709,
-            1917,
-            2455,
-            2610,
-            1719,
-            1433,
-            1544,
-            3285,
-            5208,
-            3372,
-            2484,
-            4078
-          ]
-        },
-
-        {
-          name: 'male',
-          type: 'bar',
-          stack: 'total',
-          itemStyle: {
-            normal: {
-              color: 'rgba(0,191,183,1)',
-              barBorderRadius: 0,
-              label: {
-                show: true,
                 position: 'top',
                 formatter(p) {
                   return p.value > 0 ? p.value : ''
@@ -213,25 +205,32 @@ export default {
               }
             }
           },
-          data: [
-            327,
-            1776,
-            507,
-            1200,
-            800,
-            482,
-            204,
-            1390,
-            1001,
-            951,
-            381,
-            220
-          ]
+          data: this.seriesData0
+        },
+
+        {
+          name: this.legendData[1],
+          type: 'bar',
+          barMaxWidth: 35,
+          itemStyle: {
+            normal: {
+              color: 'rgba(0,191,183,1)',
+              barBorderRadius: 0,
+              label: {
+                show: true,
+                position: 'inside',
+                formatter(p) {
+                  return p.value > 0 ? p.value : ''
+                }
+              }
+            }
+          },
+          data: this.seriesData1
         }, {
-          name: 'average',
+          name: this.legendData[2],
           type: 'line',
-          stack: 'total',
           symbolSize: 10,
+          yAxisIndex: 1,
           symbol: 'circle',
           itemStyle: {
             normal: {
@@ -246,20 +245,7 @@ export default {
               }
             }
           },
-          data: [
-            1036,
-            3693,
-            2962,
-            3810,
-            2519,
-            1915,
-            1748,
-            4675,
-            6209,
-            4323,
-            2865,
-            4298
-          ]
+          data: this.seriesData2
         }
         ]
       })

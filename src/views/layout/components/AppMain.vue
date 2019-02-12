@@ -1,8 +1,8 @@
 <template>
-  <section class="app-main" style="min-height: 100%">
-    <transition name="fade" mode="out-in">
+  <section class="app-main">
+    <transition name="fade-transform" mode="out-in">
       <keep-alive :include="cachedViews">
-        <router-view></router-view>
+        <router-view :key="key"/>
       </keep-alive>
     </transition>
   </section>
@@ -14,10 +14,28 @@ export default {
   computed: {
     cachedViews() {
       return this.$store.state.tagsView.cachedViews
+    },
+    key() {
+      return this.$route.fullPath
     }
-    // key() {
-    //   return this.$route.name !== undefined ? this.$route.name + +new Date() : this.$route + +new Date()
-    // }
   }
 }
 </script>
+
+<style scoped>
+.el-form-item--medium .el-form-item__content, .el-form-item--medium .el-form-item__label{
+  width: 11rem;
+  text-align: center
+}
+.el-form-item.is-required.el-form-item--medium{
+  margin-bottom: 1rem;
+}
+.app-main {
+  /*84 = navbar + tags-view = 50 +34 */
+  min-height: calc(100vh - 84px);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+</style>
+

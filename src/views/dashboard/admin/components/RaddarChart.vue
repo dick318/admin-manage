@@ -1,11 +1,12 @@
 <template>
-  <div :class="className" :style="{height:height,width:width}"></div>
+  <div :class="className" :style="{height:height,width:width}"/>
 </template>
 
 <script>
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
 import { debounce } from '@/utils'
+import { cardStatus } from '@/api/data'
 
 const animationDuration = 3000
 
@@ -26,23 +27,55 @@ export default {
   },
   data() {
     return {
-      chart: null
+      chart: null,
+      series: {},
+      data: ''
     }
+  },
+  beforeMount() {
+    cardStatus({
+      operatorType: 1
+    }).then(res => {
+      if (+res.status !== 0) {
+        return false
+      }
+      var qita = (res.data[0] || 0) +
+      (res.data[7] || 0) +
+      (res.data[8] || 0) +
+      (res.data[9] || 0) +
+      (res.data[10] || 0) +
+      (res.data[11] || 0)
+      this.series = {
+        value: [res.data[2] || 0,
+          res.data[1] || 0,
+          (res.data[4] || 0) + (res.data[3] || 0),
+          (res.data[5] || 0) + (res.data[6] || 0),
+          qita,
+          res.data[11] || 0],
+        name: '移动'
+      }
+      this.chart.setOption({
+        series: [{
+          // 根据名字对应到相应的系列
+          data: [this.series]
+        }]
+      })
+    })
   },
   mounted() {
     this.initChart()
-    this.__resizeHanlder = debounce(() => {
+    this.__resizeHandler = debounce(() => {
       if (this.chart) {
         this.chart.resize()
       }
     }, 100)
-    window.addEventListener('resize', this.__resizeHanlder)
+    window.addEventListener('resize', this.__resizeHandler)
   },
   beforeDestroy() {
     if (!this.chart) {
       return
     }
-    window.removeEventListener('resize', this.__resizeHanlder)
+    window.removeEventListener('resize', this.__resizeHandler)
     this.chart.dispose()
     this.chart = null
   },
@@ -52,10 +85,10 @@ export default {
 
       this.chart.setOption({
         tooltip: {
-          trigger: 'axis',
-          axisPointer: { // 坐标轴指示器，坐标轴触发有效
-            type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
-          }
+          // trigger: 'axis',
+          // axisPointer: { // 坐标轴指示器，坐标轴触发有效
+          //   type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+          // }
         },
         radar: {
           radius: '66%',
@@ -72,47 +105,33 @@ export default {
             }
           },
           indicator: [
-            { name: 'Sales', max: 10000 },
-            { name: 'Administration', max: 20000 },
-            { name: 'Information Techology', max: 20000 },
-            { name: 'Customer Support', max: 20000 },
-            { name: 'Development', max: 20000 },
-            { name: 'Marketing', max: 20000 }
+            { name: '正常' },
+            { name: '待激活' },
+            { name: '停机' },
+            { name: '销号' },
+            { name: '其他' },
+            { name: '库存期' }
           ]
         },
         legend: {
           left: 'center',
           bottom: '10',
-          data: ['Allocated Budget', 'Expected Spending', 'Actual Spending']
+          color: '#3888fa',
+          data: ['移动']
         },
         series: [{
           type: 'radar',
           symbolSize: 0,
           areaStyle: {
             normal: {
-              shadowBlur: 13,
-              shadowColor: 'rgba(0,0,0,.2)',
-              shadowOffsetX: 0,
-              shadowOffsetY: 10,
+              color: '#3888fa',
               opacity: 1
             }
           },
-          data: [
-            {
-              value: [5000, 7000, 12000, 11000, 15000, 14000],
-              name: 'Allocated Budget'
-            },
-            {
-              value: [4000, 9000, 15000, 15000, 13000, 11000],
-              name: 'Expected Spending'
-            },
-            {
-              value: [5500, 11000, 12000, 15000, 12000, 12000],
-              name: 'Actual Spending'
-            }
-          ],
+          data: this.data,
           animationDuration: animationDuration
-        }]
+        }
+        ]
       })
     }
   }

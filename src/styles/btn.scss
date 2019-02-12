@@ -10,6 +10,9 @@
     }
   }
 }
+@mixin colorText($color) {
+  color: $color;
+}
 
 .blue-btn {
   @include colorBtn($blue)
@@ -39,6 +42,34 @@
   @include colorBtn($yellow)
 }
 
+.blue-text {
+  @include colorText($blue)
+}
+
+.light-blue-text {
+  @include colorText($light-blue)
+}
+
+.red-text {
+  @include colorText($red)
+}
+
+.pink-text {
+  @include colorText($pink)
+}
+
+.green-text {
+  @include colorText($green)
+}
+
+.tiffany-text {
+  @include colorText($tiffany)
+}
+
+.yellow-text {
+  @include colorText($yellow)
+}
+
 .pan-btn {
   font-size: 14px;
   color: #fff;
@@ -46,7 +77,6 @@
   border-radius: 8px;
   border: none;
   outline: none;
-  margin-right: 25px;
   transition: 600ms ease all;
   position: relative;
   display: inline-block;

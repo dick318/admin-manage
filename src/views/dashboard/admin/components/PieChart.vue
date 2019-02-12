@@ -1,5 +1,10 @@
 <template>
-  <div :class="className" :style="{height:height,width:width}"></div>
+  <div
+    :class="className"
+    :legendData="legendData"
+    :name="name"
+    :seriesData="seriesData"
+    :style="{height:height,width:width}"/>
 </template>
 
 <script>
@@ -19,7 +24,19 @@ export default {
     },
     height: {
       type: String,
-      default: '300px'
+      default: '450px'
+    },
+    legendData: {
+      type: Array,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    seriesData: {
+      type: Array,
+      required: true
     }
   },
   data() {
@@ -27,20 +44,36 @@ export default {
       chart: null
     }
   },
+  watch: {
+    seriesData: function(newData, oldData) {
+      this.chart.setOption({
+        series: [{
+          data: this.seriesData
+        }]
+      })
+    },
+    legendData: function(newData, oldData) {
+      this.chart.setOption({
+        legend: [{
+          data: this.legendData
+        }]
+      })
+    }
+  },
   mounted() {
     this.initChart()
-    this.__resizeHanlder = debounce(() => {
+    this.__resizeHandler = debounce(() => {
       if (this.chart) {
         this.chart.resize()
       }
     }, 100)
-    window.addEventListener('resize', this.__resizeHanlder)
+    window.addEventListener('resize', this.__resizeHandler)
   },
   beforeDestroy() {
     if (!this.chart) {
       return
     }
-    window.removeEventListener('resize', this.__resizeHanlder)
+    window.removeEventListener('resize', this.__resizeHandler)
     this.chart.dispose()
     this.chart = null
   },
@@ -54,25 +87,21 @@ export default {
           formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
         legend: {
+          orient: 'horizontal',
+          itemGap: 25,
           left: 'center',
           bottom: '10',
-          data: ['Industries', 'Technology', 'Forex', 'Gold', 'Forecasts']
+          data: this.legendData
         },
         calculable: true,
         series: [
           {
-            name: 'WEEKLY WRITE ARTICLES',
+            name: this.name,
             type: 'pie',
             roseType: 'radius',
             radius: [15, 95],
             center: ['50%', '38%'],
-            data: [
-              { value: 320, name: 'Industries' },
-              { value: 240, name: 'Technology' },
-              { value: 149, name: 'Forex' },
-              { value: 100, name: 'Gold' },
-              { value: 59, name: 'Forecasts' }
-            ],
+            data: this.seriesData,
             animationEasing: 'cubicInOut',
             animationDuration: 2600
           }

@@ -1,13 +1,17 @@
-import { loginByUsername, logout, getUserInfo } from '@/api/login'
+import { signIn, signOut, getInfo, getPermissions, getUrl } from '@/api/login'
+import headImg from '@/assets/headImg.gif'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const user = {
   state: {
+    uid: '',
+    did: '',
     user: '',
     status: '',
     code: '',
     token: getToken(),
     name: '',
+    url: '',
     avatar: '',
     introduction: '',
     roles: [],
@@ -17,6 +21,12 @@ const user = {
   },
 
   mutations: {
+    SET_DID: (state, did) => {
+      state.did = did
+    },
+    SET_UID: (state, uid) => {
+      state.uid = uid
+    },
     SET_CODE: (state, code) => {
       state.code = code
     },
@@ -41,8 +51,8 @@ const user = {
     SET_ROLES: (state, roles) => {
       state.roles = roles
     },
-    SET_BTN: (state, btn) => {
-      state.btn = btn
+    SET_URL: (state, url) => {
+      state.url = url
     }
   },
 
@@ -53,11 +63,15 @@ const user = {
       const password = userInfo.password.trim()
       const captcha = userInfo.captcha.trim()
       return new Promise((resolve, reject) => {
-        loginByUsername(username, password, captcha).then(response => {
-          const data = response
-          commit('SET_TOKEN', data.token)
-          setToken(data.token)
-          resolve()
+        signIn(username, password, captcha).then(response => {
+          if (+response.status === 0) {
+            const data = response
+            commit('SET_TOKEN', data.data)
+            setToken(data.data)
+            resolve()
+          } else {
+            reject(response)
+          }
         }).catch(error => {
           reject(error)
         })
@@ -67,63 +81,31 @@ const user = {
     // 获取用户信息
     GetUserInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
-        getUserInfo().then(response => {
-          if (!response.data) { // 由于mockjs 不支持自定义状态码只能这样hack
-            reject('error')
-          }
-          const data = response.data
-          const oneArr = []; const oneNoArr = []; const twoNoArr = []; const twoArr = []; const thrArr = []; const noArr = []
-          if (data.id === data.uid) {
-            data.roles = ['admin']
-          } else {
-            let nodes = JSON.parse(data.text)
-            for (var b in nodes) {
-              if (!nodes[b]['checked']) {
-                oneNoArr.push(nodes[b]['id'])
-                for (var a in nodes[b]['children']) {
-                  if (!nodes[b]['children'][a]['checked']) {
-                    twoNoArr.push(nodes[b]['children'][a]['id'])
-                    for (var c in nodes[b]['children'][a]['children']) {
-                      if (!nodes[b]['children'][a]['children'][c]['checked']) {
-                        noArr.push(nodes[b]['children'][a]['children'][c]['id'])
-                      }
-                    }
-                  }
-                }
-              } else {
-                oneArr.push(nodes[b]['id'])
-                for (var e in nodes[b]['children']) {
-                  if (!nodes[b]['children'][e]['checked']) {
-                    twoNoArr.push(nodes[b]['children'][e]['id'])
-                    for (var f in nodes[b]['children'][e]['children']) {
-                      if (!nodes[b]['children'][e]['children'][f]['checked']) {
-                        noArr.push(nodes[b]['children'][e]['children'][f]['id'])
-                      }
-                    }
-                  } else {
-                    twoArr.push(nodes[b]['children'][e]['id'])
-                    for (var g in nodes[b]['children'][e]['children']) {
-                      if (!nodes[b]['children'][e]['children'][g]['checked']) {
-                        noArr.push(nodes[b]['children'][e]['children'][g]['id'])
-                      } else {
-                        thrArr.push(nodes[b]['children'][e]['children'][g]['id'])
-                      }
-                    }
-                  }
-                }
+        getInfo({}).then(res => {
+          if (res.status === 0) {
+            commit('SET_DID', res.data.id)
+            commit('SET_UID', res.data.uid)
+            commit('SET_NAME', res.data.uname)
+            commit('SET_AVATAR', headImg || res.data.logo)
+            getUrl({}).then(res => {
+              if (res.status === 0) {
+                commit('SET_URL', res.data || `${document.location.protocol}//${window.location.host}/go`)
               }
-            }
-            nodes = { has: oneArr.concat(twoArr), no: noArr }
-            data.roles = nodes.has
-            commit('SET_ROLES', data.roles)
-            commit('SET_BTN', data.no)
+            })
+            getPermissions().then(res => {
+              if (+res.status === 0) {
+                const oneArr = res.data || []
+                commit('SET_ROLES', oneArr)
+                resolve(res)
+              } else {
+                reject(res)
+              }
+            }).catch(() => {
+              this.dispatch('FedLogOut').then(() => {
+                location.reload() // 为了重新实例化vue-router对象 避免bug
+              })
+            })
           }
-          commit('SET_NAME', data.uname)
-          commit('SET_AVATAR', data.headimg || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
-          commit('SET_INTRODUCTION', data.introduction)
-          resolve(response)
-        }).catch(error => {
-          reject(error)
         })
       })
     },
@@ -143,40 +125,49 @@ const user = {
     // },
 
     // 登出
-    LogOut({ commit, state }) {
+    LogOut({ commit }) {
       return new Promise((resolve, reject) => {
-        logout(state.token).then(() => {
-          commit('SET_TOKEN', '')
-          commit('SET_ROLES', [])
-          removeToken()
-          resolve()
+        signOut().then((res) => {
+          if (res.status === 0) {
+            commit('SET_TOKEN', '')
+            removeToken()
+            resolve()
+          }
         }).catch(error => {
           reject(error)
         })
       })
     },
 
+    setRoles({ commit }, role) {
+      commit('SET_ROLES', { role })
+    },
+    setStoreToken({ commit }, state) {
+      setToken(state)
+      commit('SET_TOKEN', state)
+    },
+
     // 前端 登出
     FedLogOut({ commit }) {
       return new Promise(resolve => {
         commit('SET_TOKEN', '')
+        commit('SET_ROLES', [''])
         removeToken()
         resolve()
       })
     },
 
     // 动态修改权限
-    ChangeRoles({ commit }, role) {
+    ChangeRoles({ commit, dispatch }) {
       return new Promise(resolve => {
-        commit('SET_TOKEN', role)
-        setToken(role)
-        getUserInfo(role).then(response => {
-          const data = response.data
-          commit('SET_ROLES', data.roles)
-          commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
-          commit('SET_INTRODUCTION', data.introduction)
-          resolve()
+        getPermissions().then(response => {
+          const res = response.data
+          if (+res.status === 0) {
+            const oneArr = res.data || []
+            commit('SET_ROLES', oneArr)
+            dispatch('GenerateRoutes', res) // 动态修改权限后 重绘侧边菜单
+            resolve()
+          }
         })
       })
     }
