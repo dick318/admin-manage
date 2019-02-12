@@ -5,41 +5,40 @@
       <el-input v-model.trim="listQuery.newcard" class="filter-item" style="width:220px" clearable placeholder="请输入现ICCID"/>
       <el-input v-model.trim="listQuery.uname" class="filter-item" style="width:220px" clearable placeholder="请输入姓名"/>
       <el-select v-model="listQuery.agent" class="filter-item" filterable clearable placeholder="请选择代理商">
-        <el-select v-model="listQuery.orderID" class="filter-item" filterable clearable placeholder="请输入订单号">
-          <el-option
-            v-for="item in agentSelect"
-            :key="item.value"
-            :label="item.label"
-            :value="item.label"/>
-        </el-select>
-        <el-date-picker
-          v-model="listQuery.starttime"
-          value-format="yyyy-MM-dd"
-          type="date"
-          placeholder="开始日期"
-          class="filter-item"
-        />
-        <el-date-picker
-          v-model="listQuery.endtime"
-          :picker-options="pickerOptions"
-          value-format="yyyy-MM-dd"
-          type="date"
-          placeholder="结束日期"
-          class="filter-item"
-        />
-        <el-input v-model.trim="listQuery.phone" class="filter-item" style="width:220px" clearable placeholder="请输入手机号码"/>
-        <el-select v-model="listQuery.isTure" class="filter-item" clearable placeholder="是否操作" @clear="handleFilter">
-          <el-option v-for="item in whether" :key="item.value" :label="item.label=='是'?'已操作':'未操作'" :value="item.value" />
-        </el-select>
-        <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-search" @click="handleFilter"/>
-        <el-button v-waves v-permission="['kuyuplat:cardreplace:save']" class="filter-item" icon="el-icon-plus" size="small" type="primary" @click="handleCreate"/>
-        <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-refresh" @click="handleRefresh"/>
-        <el-button v-waves v-permission="['kuyuplat:excel:cardReplaceInfo']" class="filter-item" size="small" type="warning " @click="handleDownload">Java导出</el-button>
-        <el-button v-waves v-permission="['kuyuplat:excel:updateExpressInfo']" class="filter-item" size="small" type="warning " @click="operationMore">拒绝</el-button>
-        <el-button v-waves v-permission="['kuyuplat:excel:excelUpdateExpressInfo']" class="filter-item" size="small" type="success " @click="jump('/business/changeCardMore')">批量处理</el-button>
-        <el-button v-waves v-permission="['kuyuplat:cardChange:search']" class="filter-item" size="small" type="success " @click="jump('/business/changePackage')">异卡换套餐</el-button>
-
-    </el-select></div>
+        <el-option
+          v-for="item in agentSelect"
+          :key="item.value"
+          :label="item.label"
+          :value="item.label"/>
+      </el-select>
+      <el-input v-model.trim="listQuery.orderID" class="filter-item" style="width:220px" clearable placeholder="请输入订单号"/>
+      <el-date-picker
+        v-model="listQuery.starttime"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="开始日期"
+        class="filter-item"
+      />
+      <el-date-picker
+        v-model="listQuery.endtime"
+        :picker-options="pickerOptions"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="结束日期"
+        class="filter-item"
+      />
+      <el-input v-model.trim="listQuery.phone" class="filter-item" style="width:220px" clearable placeholder="请输入手机号码"/>
+      <el-select v-model="listQuery.isTure" class="filter-item" clearable placeholder="是否操作" @clear="handleFilter">
+        <el-option v-for="item in whether" :key="item.value" :label="item.label=='是'?'已操作':'未操作'" :value="item.value" />
+      </el-select>
+      <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-search" @click="handleFilter"/>
+      <el-button v-waves v-permission="['kuyuplat:cardreplace:save']" class="filter-item" icon="el-icon-plus" size="small" type="primary" @click="handleCreate"/>
+      <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-refresh" @click="handleRefresh"/>
+      <el-button v-waves v-permission="['kuyuplat:excel:cardReplaceInfo']" class="filter-item" size="small" type="warning " @click="handleDownload">Java导出</el-button>
+      <el-button v-waves v-permission="['kuyuplat:excel:updateExpressInfo']" class="filter-item" size="small" type="warning " @click="operationMore">拒绝</el-button>
+      <el-button v-waves v-permission="['kuyuplat:excel:excelUpdateExpressInfo']" class="filter-item" size="small" type="success " @click="jump('/business/changeCardMore')">批量处理</el-button>
+      <el-button v-waves v-permission="['kuyuplat:cardChange:search']" class="filter-item" size="small" type="success " @click="jump('/business/changePackage')">异卡换套餐</el-button>
+    </div>
     <el-table
       ref="multipleTable"
       :data="list"
