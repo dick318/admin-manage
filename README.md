@@ -29,7 +29,7 @@
 
 项目在线演示地址：[http://p.szcoolfish.com](http://p.szcoolfish.com)  
 
-![https://github.com/xwlaix/app-recharge/blob/master/example.gif](https://github.com/xwlaix/app-recharge/blob/master/example.gif)
+![https://github.com/xwlaix/admin-manage/blob/master/example.gif](https://github.com/xwlaix/admin-manage/blob/master/example.gif)
 
 ## 技术选型
 

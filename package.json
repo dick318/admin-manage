@@ -1,8 +1,8 @@
 {
-  "name": "admin-java",
+  "name": "admin-manage",
   "version": "3.9.3",
   "description": "深圳酷鱼互动总后台管理Java版",
-  "author": "XieWanlin",
+  "author": "XieWanlin <way215870604@gmail.com>",
   "license": "MIT",
   "scripts": {
     "dev": "cross-env BABEL_ENV=development webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
@@ -19,6 +19,20 @@
       "eslint --fix",
       "git add"
     ]
+  },
+  "keywords": [
+    "vue",
+    "element-ui",
+    "admin",
+    "management-system",
+    "admin-template"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xwlaix/admin-manage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xwlaix/admin-manage/issues"
   },
   "dependencies": {
     "axios": "0.18.0",
