@@ -122,7 +122,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作者" show-overflow-tooltip min-width="85">
         <template slot-scope="scope">
-          <span>{{ scope.row.uname }}</span>
+          <span>{{ scope.row.dname }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.actions')" align="left" show-overflow-tooltip min-width="320px">

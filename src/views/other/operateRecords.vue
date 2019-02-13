@@ -71,12 +71,13 @@
       <el-table-column align="center" label="变化数据" min-width="140">
         <template slot-scope="scope">
           <el-popover v-if="scope.row.oldData||scope.row.newData" trigger="hover" placement="top">
-            <el-table :data="getValue(scope.row)" :row-class-name="tableRowClassName">
+            <el-table :data="getValue(scope.row)" :fit ="true" :row-class-name="tableRowClassName" size="mini">
               <el-table-column
                 v-for="(item, index) in getLabel(scope.row)"
                 :key="index"
                 :label="item"
                 show-overflow-tooltip
+                min-width="100"
                 align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row[item] }}</span>
