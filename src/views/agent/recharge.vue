@@ -35,7 +35,7 @@
       />
       <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-search" @click="handleFilter"/>
       <el-button v-waves size="small" type="success" class="filter-item" icon="el-icon-refresh" @click="handleRefresh"/>
-      <el-button v-waves size="small" type="warning " class="filter-item" icon="el-icon-download" @click="webDownload"/>
+      <el-button v-waves v-permission="['kuyuplat:export:agentAccount']" size="small" type="warning " class="filter-item" @click="handleDownload">Java导出</el-button>
     </div>
     <p v-if="money" class="warn-content" style="margin : 0">
       账户余额:<a>{{ money }}</a>
@@ -114,7 +114,7 @@
 
 <script>
 import waves from '@/directive/waves' // 水波纹指令
-import { getAgentAccount, agentRecharge } from '@/api/agent'
+import { getAgentAccount, agentRecharge, exportAgentAccount } from '@/api/agent'
 import { getAgent } from '@/api/agent'
 import { agentArr } from '@/utils/mapArr'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
@@ -254,73 +254,83 @@ export default {
       this.getAmountInfo()
       this.getList('sec')
     },
+    handleDownload() {
+      exportAgentAccount(this.listQuery, '.filter-container').then(res => {
+        this.$notify({
+          type: +res.status === 0 ? 'success' : 'error',
+          message: res.message,
+          duration: 2000
+        })
+      })
+    },
     webDownload() {
       this.downAction()
     },
     downAction(pageSize) {
-      getAgentAccount({
-        orderID: this.listQuery.orderID,
-        pageSize: pageSize,
-        pageNo: 1
-      }, '.table').then(res => {
-        if (+res.status === 0) {
-          const list = res.data.rows
-          import('@/vendor/Export2Excel').then(excel => {
-            const tHeader = [
-              '订单号',
-              '充值时间',
-              '充值类型',
-              '扣费前余额',
-              '套餐扣费',
-              '备注'
-            ]
-            const filterVal = [
-              'orderID',
-              'addtime',
-              'type',
-              'agoAmount',
-              'amount',
-              'remarks'
-            ]
-            const data = this.formatJson(filterVal, list)
-            excel.export_json_to_excel({
-              header: tHeader,
-              data,
-              filename: `余额信息${new Date().toLocaleDateString()}`
-            })
-            this.$notify({
-              type: 'success',
-              message: res.message
-            })
-          })
-        } else {
-          this.$notify({
-            type: 'error',
-            message: '数量过多'
-          })
-          this.$prompt('', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            inputPlaceholder: '请输入导出数量',
-            inputErrorMessage: '数量填写不正确',
-            inputValue: 10000,
-            inputValidator: function(value) {
-              if (/(^[1-9]\d*$)/.test(+value)) {
-                return true
-              } else {
-                return false
-              }
-            }
-          }).then(({ value }) => {
-            this.downAction(value)
-          }).catch(() => {
-            this.$notify({
-              type: 'info',
-              message: '已取消'
-            })
-          })
-        }
-      })
+
+      // getAgentAccount({
+      //   orderID: this.listQuery.orderID,
+      //   pageSize: pageSize,
+      //   pageNo: 1
+      // }, '.table').then(res => {
+      //   if (+res.status === 0) {
+      //     const list = res.data.rows
+      //     import('@/vendor/Export2Excel').then(excel => {
+      //       const tHeader = [
+      //         '订单号',
+      //         '充值时间',
+      //         '充值类型',
+      //         '扣费前余额',
+      //         '套餐扣费',
+      //         '备注'
+      //       ]
+      //       const filterVal = [
+      //         'orderID',
+      //         'addtime',
+      //         'type',
+      //         'agoAmount',
+      //         'amount',
+      //         'remarks'
+      //       ]
+      //       const data = this.formatJson(filterVal, list)
+      //       excel.export_json_to_excel({
+      //         header: tHeader,
+      //         data,
+      //         filename: `余额信息${new Date().toLocaleDateString()}`
+      //       })
+      //       this.$notify({
+      //         type: 'success',
+      //         message: res.message
+      //       })
+      //     })
+      //   } else {
+      //     this.$notify({
+      //       type: 'error',
+      //       message: '数量过多'
+      //     })
+      //     this.$prompt('', '提示', {
+      //       confirmButtonText: '确定',
+      //       cancelButtonText: '取消',
+      //       inputPlaceholder: '请输入导出数量',
+      //       inputErrorMessage: '数量填写不正确',
+      //       inputValue: 10000,
+      //       inputValidator: function(value) {
+      //         if (/(^[1-9]\d*$)/.test(+value)) {
+      //           return true
+      //         } else {
+      //           return false
+      //         }
+      //       }
+      //     }).then(({ value }) => {
+      //       this.downAction(value)
+      //     }).catch(() => {
+      //       this.$notify({
+      //         type: 'info',
+      //         message: '已取消'
+      //       })
+      //     })
+      //   }
+      // })
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v =>

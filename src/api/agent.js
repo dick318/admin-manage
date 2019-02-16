@@ -114,3 +114,12 @@ export function closeWithdrawal(data, showLoading) {
     showLoading
   })
 }
+// 导出余额记录
+export function exportAgentAccount(data, showLoading) {
+  return request({
+    url: '/plat/export/v4/exportAgentAccount',
+    method: 'post',
+    data,
+    showLoading
+  })
+}

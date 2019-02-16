@@ -53,3 +53,12 @@ export function mifiQuerydata(data, showLoading) {
     showLoading
   })
 }
+// 8、设备删除
+export function mifiDel(data, showLoading) {
+  return request({
+    url: '/plat/mifi/v4/del',
+    method: 'post',
+    data,
+    showLoading
+  })
+}

@@ -65,9 +65,9 @@
           <span>{{ scope.row.iccid }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="限速编码" show-overflow-tooltip min-width="100">
+      <el-table-column align="center" label="限速描述" show-overflow-tooltip min-width="100">
         <template slot-scope="scope">
-          <span>{{ scope.row.speedValue }}</span>
+          <span>{{ scope.row.speedValueDesc }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作原因" show-overflow-tooltip min-width="100">
@@ -200,8 +200,8 @@ export default {
     },
     getList() {
       if (this.zids.length > 0) {
-        this.listQuery.zids = this.zids
-        this.listQuery.zids = this.listQuery.zids.join(',')
+        this.listQuery.zid = this.zids
+        this.listQuery.zid = this.listQuery.zid.join(',')
       } else {
         this.listQuery.zid = ''
       }

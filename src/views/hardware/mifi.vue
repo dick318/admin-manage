@@ -30,7 +30,9 @@
       <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-search" @click="handleFilter"/>
       <el-button v-waves size="small" type="success" class="filter-item" icon="el-icon-refresh" @click="handleRefresh"/>
       <el-button v-waves size="small" type="warning " class="filter-item" icon="el-icon-download" @click="handleDownload"/>
-      <el-button v-waves size="small" type="warning " class="filter-item" @click="uploadExcel">设备导入</el-button>
+      <el-button v-waves v-permission="['kuyuplat:mifi:del']" size="small" type="danger " class="filter-item" @click="deleteMore">删除</el-button>
+      <el-button v-waves v-permission="['kuyuplat:mifi:import']" size="small" type="warning " class="filter-item" @click="uploadExcel">设备导入</el-button>
+      <!-- <el-button v-waves v-permission="['kuyuplat:mifi:import']" size="small" type="warning " class="filter-item" @click="deleteJump">批量删除</el-button> -->
     </div>
     <!-- Note that row-key is necessary to get a correct row order. -->
     <el-table
@@ -45,9 +47,9 @@
       highlight-current-row
       @cell-click="toggleSelection"
       @selection-change="select">
-      <!-- <el-table-column
+      <el-table-column
         type="selection"
-        width="55"/> -->
+        width="55"/>
       <el-table-column show-overflow-tooltip align="center" label="IMEI号" min-width="180">
         <template slot-scope="scope">
           <span>{{ scope.row.deviceId }}</span>
@@ -126,6 +128,7 @@
           <el-button v-permission="['kuyuplat:mifi:swith','kuyuplat:mifi:speed','kuyuplat:mifi:setmax']" type="primary" size="mini" @click="updateSetting(scope.row)">上网功能</el-button>
           <el-button type="success" size="mini" @click="querydata(scope.row)">刷新</el-button>
           <el-button v-permission="['kuyuplat:mifi:webaccess']" type="danger" size="mini" @click="webaccess(scope.row)">黑名单</el-button>
+          <el-button v-permission="['kuyuplat:mifi:del']" type="danger" size="mini" @click="del(scope.row.deviceId)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -172,7 +175,7 @@
 </template>
 
 <script>
-import { mifiList, mifiSwitch, mifiSetspeed, mifiSetmax, mifiWebaccess, mifiQuerydata } from '@/api/mifi'
+import { mifiList, mifiSwitch, mifiSetspeed, mifiSetmax, mifiWebaccess, mifiQuerydata, mifiDel } from '@/api/mifi'
 import { whether0, stateMap } from '@/utils/mapArr'
 import { toSize } from '@/utils'
 import waves from '@/directive/waves' // 水波纹指令
@@ -244,6 +247,9 @@ export default {
     uploadExcel() {
       this.$router.push('/hardware/mifiUpload')
     },
+    deleteJump() {
+      this.$router.push('/hardware/mifiDelete')
+    },
     jump(card) {
       this.$router.push(`/business/flowInfo?iccid=${card}`)
     },
@@ -266,6 +272,7 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+
     webaccess(row) {
       this.dialogDomainVisible = true
       this.dialogStatus = 'webaccess'
@@ -283,6 +290,63 @@ export default {
       if (index !== -1) {
         this.temp.domain.splice(index, 1)
       }
+    },
+    deleteMore(type) {
+      if (this.selectArr.length === 0) {
+        this.$message.error('请选中后提交！')
+        return false
+      }
+      const idArr = []
+      this.selectArr.map((v, i) => {
+        idArr.push(v.deviceId)
+      })
+      mifiDel({ deviceIds: Array.of(idArr).join(',') }, '.table').then(res => {
+        this.$notify({
+          type: +res.status === 0 ? 'success' : 'error',
+          message: res.message,
+          duration: 2000
+        })
+        if (res.status === 0) {
+          for (const value of idArr.values()) {
+            for (const v of this.list) {
+              if (v.deviceId === value) {
+                const index = this.list.indexOf(v)
+                this.list.splice(index, 1)
+                break
+              }
+            }
+          }
+        }
+      })
+    },
+    del(value) {
+      this.$confirm('此操作将删除该设备, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        mifiDel({ deviceIds: value }, '.table').then(res => {
+          this.$notify({
+            type: +res.status === 0 ? 'success' : 'error',
+            message: res.message,
+            duration: 2000
+          })
+          if (+res.status === 0) {
+            for (const v of this.list) {
+              if (+v.deviceId === +value) {
+                const index = this.list.indexOf(v)
+                this.list.splice(index, 1)
+                break
+              }
+            }
+          }
+        })
+      }).catch(() => {
+        this.$notify({
+          type: 'info',
+          message: '已取消'
+        })
+      })
     },
     updateData() {
       this.$refs['dataForm'].validate(valid => {

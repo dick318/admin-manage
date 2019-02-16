@@ -187,8 +187,8 @@ export default {
     },
     getList() {
       if (this.zids.length > 0) {
-        this.listQuery.zids = this.zids
-        this.listQuery.zids = this.listQuery.zids.join(',')
+        this.listQuery.zid = this.zids
+        this.listQuery.zid = this.listQuery.zid.join(',')
       } else {
         this.listQuery.zid = ''
       }
