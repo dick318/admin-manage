@@ -225,7 +225,8 @@ const operationTypeMap = {
   39: '财务数据导出',
   40: '卡片批量断复网',
   41: '联通资费计划导出',
-  42: 'MIFI设备导入'
+  42: 'MIFI设备导入',
+  43: '代理商余额导出'
 }
 // 操作类型Select
 const operationTypeSelect = [
@@ -396,6 +397,10 @@ const operationTypeSelect = [
   {
     value: '42',
     label: 'MIFI设备导入'
+  },
+  {
+    value: '43',
+    label: '代理商余额导出'
   }
 ]
 // 激活类型Select

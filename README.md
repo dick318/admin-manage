@@ -82,6 +82,12 @@ vue-element-admin | 项目脚手架参考 | [https://github.com/PanJiaChen/vue-e
 - 在vscode命令行中运行命令：npm run dev,运行项目;
 - 访问地址：浏览器自动打开页面，默认设置为[http://localhost:9526](http://localhost:9526);
 - 如果遇到无法运行该命令，需要配置npm的环境变量，如在path变量中添加：C:\Users\zhenghong\AppData\Roaming\npm。
+  
+## 全局请求loading层设置
+- 在调用统一管理的 api service 请求函数中设置loading层选择器。
+- 在 request.js 保存loading数组，判断有无配置，有的话保存请求连接和loading对象。
+- 在获取到返回值后销毁对应的请求接口的loading层。
+
 
 ## 许可证
 
