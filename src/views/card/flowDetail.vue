@@ -75,18 +75,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-container">
-        <el-pagination
-          :current-page="listQuery.pageNo"
-          :page-sizes="[10,20,30, 50,100,500,1000]"
-          :page-size="listQuery.pageSize"
-          :pager-count="5"
-          :total="total"
-          background
-          layout="total, sizes,jumper, prev, pager, next"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"/>
-      </div>
+      <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+
     </el-card>
 
   </div>
@@ -98,10 +88,11 @@ import Chart from '@/components/Charts/mixChart'
 import { cardFlowDetail } from '@/api/card'
 import waves from '@/directive/waves' // 水波纹指令
 import { toSize } from '@/utils'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'FlowDetail',
-  components: { Chart },
+  components: { Chart, Pagination },
   directives: {
     waves
   },
@@ -120,7 +111,7 @@ export default {
         pageNo: 1,
         pageSize: 10
       },
-      total: null,
+      total: 0,
       xData: [],
       legendData: ['总流量', '已用流量', '使用率'],
       seriesData0: [],

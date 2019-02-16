@@ -81,19 +81,7 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.page"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
   </div>
 </template>
@@ -106,9 +94,11 @@ import waves from '@/directive/waves' // 水波纹指令
 import {
   operationStatusMap, operationTypeMap, operationTypeSelect, utypeSelect
 } from '@/utils/mapArr'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'OperateList',
+  components: { Pagination },
   directives: {
     waves
   },
@@ -127,7 +117,7 @@ export default {
         type: '',
         utype: ''
       },
-      total: null
+      total: 0
     }
   },
   created() {
@@ -300,14 +290,7 @@ export default {
       }
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     getList() {
       workRecord(this.listQuery, '.table').then(res => {
         if (+res.status === 0) {

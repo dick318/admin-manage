@@ -41,6 +41,18 @@ const cardRouter = {
       name: 'AutonymCard',
       meta: { title: 'autonymCard', roles: ['kuyuplat:card:getCardReal'] }
     },
+    {
+      path: 'queryException',
+      component: () => import('@/views/card/queryException'),
+      name: 'QueryException',
+      meta: { title: '异常日志查询', roles: ['kuyuplat:card:findQueryException'] }
+    },
+    {
+      path: 'speedLimit',
+      component: () => import('@/views/card/speedLimit'),
+      name: 'SpeedLimit',
+      meta: { title: '限速日志查询', roles: ['kuyuplat:card:findSpeedLimitAction'] }
+    },
 
     {
       path: 'AutonymMore',

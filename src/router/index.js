@@ -210,7 +210,7 @@ export const asyncRouterMap = [
     name: 'hardware',
     meta: {
       title: 'hardware',
-      icon: 'window-restore',
+      icon: 'hardware',
       roles: [
         'kuyuplat:mifi:list'
       ]
@@ -220,7 +220,13 @@ export const asyncRouterMap = [
         path: 'mifi',
         component: () => import('@/views/hardware/mifi'),
         name: 'HardwareMifi',
-        meta: { title: 'hardwareMifi', icon: 'hardware', roles: ['kuyuplat:mifi:list'] }
+        meta: { title: 'hardwareMifi', roles: ['kuyuplat:mifi:list'] }
+      },
+      {
+        path: 'mifiUpload',
+        component: () => import('@/views/hardware/mifiUpload'),
+        name: 'MifiUpload',
+        meta: { title: 'MIFI设备导入', roles: ['kuyuplat:mifi:import'] }
       }
     ]
   },

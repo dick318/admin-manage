@@ -192,18 +192,8 @@
         </template>
       </el-table-column>
     </el-table>
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+
   </div>
 </template>
 
@@ -215,8 +205,11 @@ import { accountsArr, inuseMap, packageEffectMap, typeArr, packageStatusSelect, 
 import * as Driver from 'driver.js' // import driver.js
 import 'driver.js/dist/driver.min.css' // import driver.js css
 import { orderPackage } from '../guide/defineSteps'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'OrderPackage',
+  components: { Pagination },
   directives: {
     waves
   },
@@ -266,7 +259,7 @@ export default {
       packageValue: [],
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       number: 1,
       type: '',
       operatorNames: [],
@@ -560,14 +553,7 @@ export default {
         this.getPackage()
       }
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList('sec')
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList('sec')
-    },
+
     handleRefresh() {
       this.listQuery = {
         card: '',

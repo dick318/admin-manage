@@ -2,14 +2,14 @@
   <div class="app-container">
     <div class="filter-container">
       <el-date-picker
-        v-model="listQuery.starttime"
+        v-model="listQuery.addtimeStart"
         value-format="yyyy-MM-dd"
         type="date"
         placeholder="开始日期"
         class="filter-item"
       />
       <el-date-picker
-        v-model="listQuery.endtime"
+        v-model="listQuery.addtimeEnd"
         :picker-options="pickerOptions"
         value-format="yyyy-MM-dd"
         type="date"
@@ -19,24 +19,16 @@
       <el-input v-model.trim="listQuery.iccid" class="filter-item" style="width:220px" clearable placeholder="请输入ICCID"/>
       <el-input v-model.trim="listQuery.tel" class="filter-item" style="width:220px" clearable placeholder="请输入接入号"/>
       <el-input v-model.trim="listQuery.number" class="filter-item" style="width:220px" clearable placeholder="请输入虚拟号"/>
-
-      <el-select v-model="listQuery.type" class="filter-item" clearable placeholder="请选择停复机类型">
+      <el-select v-model="listQuery.status" class="filter-item" clearable placeholder="请选择处理状态">
         <el-option
-          v-for="item in typeArr"
+          v-for="item in statusArr"
           :key="item.value"
           :label="item.label"
           :value="item.value"/>
       </el-select>
-      <el-select v-model="listQuery.dispose" class="filter-item" clearable placeholder="请选择处理状态">
+      <el-select v-model="operatorType" class="filter-item" collapse-tags multiple clearable placeholder="请选择运营商类型">
         <el-option
-          v-for="item in disposeArr"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"/>
-      </el-select>
-      <el-select v-model="listQuery.actionType" class="filter-item" clearable placeholder="请选择操作类型">
-        <el-option
-          v-for="item in actionTypeArr"
+          v-for="item in operator_type"
           :key="item.value"
           :label="item.label"
           :value="item.value"/>
@@ -50,7 +42,7 @@
       </el-select>
       <el-button v-waves class="filter-item" size="small" type="primary" icon="el-icon-search" @click="handleFilter"/>
       <el-button v-waves class="filter-item" size="small" type="success" icon="el-icon-refresh" @click="handleRefresh"/>
-      <el-button v-waves v-permission="['kuyuplat:cardActionException:export']" class="filter-item" size="small" type="warning" @click="handleDownload">Java导出</el-button>
+      <!-- <el-button v-waves v-permission="['kuyuplat:cardActionException:export']" class="filter-item" size="small" type="warning" @click="handleDownload">Java导出</el-button> -->
     </div>
     <!-- Note that row-key is necessary to get a correct row order. -->
     <el-table
@@ -73,15 +65,14 @@
           <span>{{ scope.row.iccid }}</span>
         </template>
       </el-table-column>
-      <el-table-column show-overflow-tooltip align="center" label="接入号">
+      <el-table-column align="center" label="限速编码" show-overflow-tooltip min-width="100">
         <template slot-scope="scope">
-          <span>{{ scope.row.tel }}</span>
+          <span>{{ scope.row.speedValue }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column align="center" label="虚拟号" show-overflow-tooltip min-width="85">
+      <el-table-column align="center" label="操作原因" show-overflow-tooltip min-width="100">
         <template slot-scope="scope">
-          <span>{{ scope.row.number }}</span>
+          <span>{{ scope.row.reason }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="时间" show-overflow-tooltip min-width="180">
@@ -89,45 +80,32 @@
           <span>{{ scope.row.addtime }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作类型" show-overflow-tooltip min-width="85">
+      <el-table-column align="center" label="结果描述" show-overflow-tooltip min-width="180">
         <template slot-scope="scope">
-          <span>{{ scope.row.actionType==1?'停复机':'上网功能' }}</span>
+          <span>{{ scope.row.result }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="操作者" show-overflow-tooltip min-width="80">
+        <template slot-scope="scope">
+          <span>{{ scope.row.dname }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column align="center" label="运营商" show-overflow-tooltip min-width="90">
+        <template slot-scope="scope">
+          <span>{{ scope.row.operator_type==1?'移动':scope.row.operator_type==2?'电信':scope.row.operator_type==3?'联通':'' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="供应商账号" show-overflow-tooltip min-width="145">
+        <template slot-scope="scope">
+          <span>{{ zidObject[scope.row.zid]?`${zidObject[scope.row.zid]}--${scope.row.zid}`:scope.row.zid }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="处理状态" show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-tag :type="scope.row.dispose==2?'success':'warning'">{{ scope.row.dispose==2?'已处理':'未处理' }}</el-tag>
+          <el-tag :type="scope.row.status==2?'success':'warning'">{{ scope.row.status==2?'成功':'失败' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="停复机类型" show-overflow-tooltip>
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.type==2?'success':'warning'">{{ scope.row.type==2?'复机':scope.row.type==1?'停机':'' }}</el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column align="center" label="异常消息" show-overflow-tooltip min-width="90">
-        <template slot-scope="scope">
-          <span>{{ scope.row.excMsg }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="异常次数" show-overflow-tooltip min-width="90">
-        <template slot-scope="scope">
-          <span>{{ scope.row.excNum }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="供应商账号" show-overflow-tooltip min-width="85">
-        <template slot-scope="scope">
-          <span>{{ scope.row.accountName }}</span>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column :label="$t('table.actions')" align="left" show-overflow-tooltip min-width="320px">
-        <template slot-scope="scope">
-          <el-button v-permission="['common']" v-if="scope.row.status==1" type="primary" size="mini" @click="pass(scope.row.id)">通过</el-button>
-          <el-button v-permission="['common']" v-if="scope.row.status==1" type="danger" size="mini" @click="refuse(scope.row.id)">拒绝</el-button>
-          <el-button v-permission="['common']" type="primary" size="mini" @click="jump(`/business/AutonymDetails?id=${scope.row.id}`)">详情</el-button>
-          <el-button v-permission="['common']" type="danger" size="mini" @click="delete(scope.row)"icon="el-icon-delete"/>
-        </template>
-      </el-table-column> -->
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
@@ -137,12 +115,12 @@
 
 <script>
 import waves from '@/directive/waves' // 水波纹指令
-import { accountsArr, withdrawStatus, withdrawStatusMap } from '@/utils/mapArr'
-import { searchCardActionException, exportCardAction } from '@/api/stopReset'
+import { accountsArr, operator_type } from '@/utils/mapArr'
+import { findSpeedLimitAction } from '@/api/card'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
-  name: 'StopAbnormal',
+  name: 'QueryException',
   components: { Pagination },
 
   directives: {
@@ -150,37 +128,27 @@ export default {
   },
   data() {
     return {
+      operator_type,
       pickerOptions: this.processDate(),
-      withdrawStatus,
-      withdrawStatusMap,
       list: [],
       zids: [],
+      operatorType: [],
+      zidObject: {},
       total: 0,
       listQuery: {
         pageNo: 1,
         pageSize: 10,
-        starttime: '',
-        endtime: '',
+        addtimeStart: '',
+        addtimeEnd: '',
         iccid: '',
         tel: '',
         number: '',
-        type: '',
-        dispose: '',
-        actionType: '',
-        zids: ''
+        status: '',
+        operatorType: '',
+        zid: ''
       },
       zidSelect: [],
-      typeArr: [
-        {
-          value: '1',
-          label: '停机'
-        },
-        {
-          value: '2',
-          label: '复机'
-        }
-      ],
-      disposeArr: [
+      statusArr: [
         {
           value: '1',
           label: '未处理'
@@ -189,41 +157,22 @@ export default {
           value: '2',
           label: '已处理'
         }
-      ],
-      actionTypeArr: [
-        {
-          value: '1',
-          label: '停复机'
-        },
-        {
-          value: '2',
-          label: '上网功能'
-        }
       ]
     }
   },
   created() {
-    accountsArr((zidSelect) => {
+    accountsArr((zidSelect, accountsTypeArr, zidObject) => {
       this.zidSelect = zidSelect
+      this.zidObject = zidObject
     })
     this.getList()
   },
   methods: {
-    pass(value) {
-
-    },
-    refuse(value) {
-
-    },
-
-    jump(type) {
-      this.$router.push(type)
-    },
     processDate() {
       const self = this
       return {
         disabledDate(time) {
-          return new Date(self.listQuery.starttime).getTime() > time.getTime()
+          return new Date(self.listQuery.addtimeStart).getTime() > time.getTime()
         }
       }
     },
@@ -236,17 +185,17 @@ export default {
       this.listQuery = {
         pageNo: 1,
         pageSize: 10,
-        starttime: '',
-        endtime: '',
+        addtimeStart: '',
+        addtimeEnd: '',
         iccid: '',
         tel: '',
         number: '',
-        type: '',
-        dispose: '',
-        actionType: '',
-        zids: ''
+        status: '',
+        operatorType: '',
+        zid: ''
       }
       this.zids = []
+      this.operatorType = []
       this.getList()
     },
     getList() {
@@ -254,31 +203,18 @@ export default {
         this.listQuery.zids = this.zids
         this.listQuery.zids = this.listQuery.zids.join(',')
       } else {
-        this.listQuery.zids = ''
+        this.listQuery.zid = ''
       }
-      searchCardActionException(this.listQuery, '.table').then(res => {
+      if (this.operatorType.length > 0) {
+        this.listQuery.operatorType = this.operatorType
+        this.listQuery.operatorType = this.listQuery.operatorType.join(',')
+      } else {
+        this.listQuery.operatorType = ''
+      }
+      findSpeedLimitAction(this.listQuery, '.table').then(res => {
         if (+res.status === 0) {
           this.list = res.data.rows
           this.total = +res.data.total
-        }
-
-        this.$notify({
-          type: +res.status === 0 ? 'success' : 'error',
-          message: res.message,
-          duration: 2000
-        })
-      })
-    },
-    handleDownload() {
-      if (this.zids.length > 0) {
-        this.listQuery.zids = this.zids
-        this.listQuery.zids = this.listQuery.zids.join(',')
-      } else {
-        this.listQuery.zids = ''
-      }
-      exportCardAction(this.listQuery, '.filter-container').then(res => {
-        if (+res.status === 0) {
-          window.open(res.data, '_self')
         }
         this.$notify({
           type: +res.status === 0 ? 'success' : 'error',
@@ -287,6 +223,24 @@ export default {
         })
       })
     }
+    // handleDownload() {
+    //   if (this.zids.length > 0) {
+    //     this.listQuery.zids = this.zids
+    //     this.listQuery.zids = this.listQuery.zids.join(',')
+    //   } else {
+    //     this.listQuery.zids = ''
+    //   }
+    //   exportCardAction(this.listQuery, '.filter-container').then(res => {
+    //     if (+res.status === 0) {
+    //       window.open(res.data, '_self')
+    //     }
+    //     this.$notify({
+    //       type: +res.status === 0 ? 'success' : 'error',
+    //       message: res.message,
+    //       duration: 2000
+    //     })
+    //   })
+    // }
   }
 }
 </script>

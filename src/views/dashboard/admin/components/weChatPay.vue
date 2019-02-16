@@ -112,7 +112,7 @@ export default {
   data() {
     return {
       list: [],
-      total: null,
+      total: 0,
       pagination: {
         page: 1,
         limit: 10

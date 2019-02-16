@@ -35,7 +35,7 @@
       <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-search" @click="handleFilter"/>
       <el-button v-waves size="small" type="success" class="filter-item" icon="el-icon-refresh" @click="handleRefresh"/>
       <el-button v-waves v-permission="['kuyuplat:export:weipayList']" size="small" type="warning " class="filter-item" @click="handleDownload">Java导出</el-button>
-      <el-button v-waves v-permission="['kuyuplat:wx:excelRefund']" size="small" type="warning " class="filter-item" @click="jump()">批量退款</el-button>
+      <el-button v-waves v-permission="['kuyuplat:wx:excelRefund']" size="small" type="warning " class="filter-item" @click="jump('/finance/weipayRefund')">批量退款</el-button>
     </div>
     <!-- Note that row-key is necessary to get a correct row order. -->
     <el-table
@@ -98,18 +98,7 @@
       </el-table-column>
     </el-table>
 
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
     <el-dialog :visible.sync="dialogFormVisible" title="微信退款">
       <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" class="dialog" label-position="right" label-width="8rem">
         <el-form-item label="退款金额" prop="refundFee">
@@ -133,8 +122,12 @@ import {
 } from '@/api/payList'
 import { payListMap, orderTypeSelect, orderTypeMap, orderStatusSelect } from '@/utils/mapArr'
 import waves from '@/directive/waves' // 水波纹指令
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'PayList',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -147,7 +140,7 @@ export default {
       pickerOptions: this.processDate(),
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       dialogFormVisible: false,
       rules: {
         refundFee: [
@@ -229,14 +222,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleDownload() {
       this.$confirm('此操作将导出支付记录, 是否继续?', '提示', {
         confirmButtonText: '确定',

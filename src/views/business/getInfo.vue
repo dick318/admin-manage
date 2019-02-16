@@ -338,7 +338,7 @@ export default {
       ctccSpeedSelect,
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       loading: false,
       selectArr: [],
       result: [],

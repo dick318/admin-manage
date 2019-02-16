@@ -224,7 +224,8 @@ const operationTypeMap = {
   38: '号码批量限速',
   39: '财务数据导出',
   40: '卡片批量断复网',
-  41: '联通资费计划导出'
+  41: '联通资费计划导出',
+  42: 'MIFI设备导入'
 }
 // 操作类型Select
 const operationTypeSelect = [
@@ -391,6 +392,10 @@ const operationTypeSelect = [
   {
     value: '41',
     label: '联通资费计划导出'
+  },
+  {
+    value: '42',
+    label: 'MIFI设备导入'
   }
 ]
 // 激活类型Select
@@ -975,6 +980,10 @@ const orderStatusSelect = [
   {
     value: 4,
     label: '退款'
+  },
+  {
+    value: 5,
+    label: '退款中'
   }
 ]
 
@@ -1038,7 +1047,8 @@ const statusMap = {
   1: '未支付',
   2: '支付成功',
   3: '订单成功',
-  4: '退款'
+  4: '退款',
+  5: '退款中'
 }
 // 订单支付状态
 const payListMap = {

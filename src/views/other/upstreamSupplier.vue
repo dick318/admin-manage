@@ -216,7 +216,7 @@ export default {
       tableKey: 0,
       list: [],
       sourceList: [],
-      total: null,
+      total: 0,
       dialogFormVisible: false,
       listQuery: {
         operatorType: '',

@@ -40,19 +40,8 @@
         </template>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50,100,500,1000]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :model="temp" :rules="rules" :inline="true" class="dialog" label-width="9rem" >
         <el-form-item label="自定义名称:" prop="tetle">
@@ -85,9 +74,11 @@ import waves from '@/directive/waves' // 水波纹指令
 import { searchAccount, saveAccount, updateAccount, deleteAccount, getServer } from '@/api/supplier'
 // import { toSize } from '@/utils'
 import store from '@/store'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'Accounts',
+  components: { Pagination },
   directives: {
     waves
   },
@@ -96,7 +87,7 @@ export default {
       dialogFormVisible: false,
       list: [],
       urlArr: [],
-      total: null,
+      total: 0,
       listQuery: {
         tetle: '',
         pageNo: 1,
@@ -254,14 +245,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleRefresh() {
       this.listQuery.pageNo = 1
       this.listQuery.tetle = ''

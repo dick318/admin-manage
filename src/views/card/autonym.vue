@@ -135,18 +135,8 @@
       </el-table-column>
     </el-table>
 
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50,100,500,1000]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+
   </div>
 </template>
 
@@ -154,9 +144,12 @@
 import waves from '@/directive/waves' // 水波纹指令
 import { withdrawStatus, withdrawStatusMap } from '@/utils/mapArr'
 import { getCardReal, editCardReal, delCardReal } from '@/api/cardReal'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'AutonymCard',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -167,7 +160,7 @@ export default {
       withdrawStatus,
       withdrawStatusMap,
       list: [],
-      total: null,
+      total: 0,
       listQuery: {
         status: '',
         cardNo: '',
@@ -320,14 +313,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleRefresh() {
       this.listQuery = {
         status: '',

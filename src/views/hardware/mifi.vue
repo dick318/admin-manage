@@ -30,6 +30,7 @@
       <el-button v-waves size="small" type="primary" class="filter-item" icon="el-icon-search" @click="handleFilter"/>
       <el-button v-waves size="small" type="success" class="filter-item" icon="el-icon-refresh" @click="handleRefresh"/>
       <el-button v-waves size="small" type="warning " class="filter-item" icon="el-icon-download" @click="handleDownload"/>
+      <el-button v-waves size="small" type="warning " class="filter-item" @click="uploadExcel">设备导入</el-button>
     </div>
     <!-- Note that row-key is necessary to get a correct row order. -->
     <el-table
@@ -165,18 +166,7 @@
       </div>
     </el-dialog>
 
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
   </div>
 </template>
@@ -187,9 +177,12 @@ import { whether0, stateMap } from '@/utils/mapArr'
 import { toSize } from '@/utils'
 import waves from '@/directive/waves' // 水波纹指令
 import checkPermission from '@/utils/permission' // 权限判断函数
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'HardwareMifi',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -205,7 +198,7 @@ export default {
       pickerOptions: this.processDate(),
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       listQuery: {
         uid: '',
         pageNo: 1,
@@ -247,6 +240,9 @@ export default {
     },
     toggleSelection(row) {
       this.$refs.multipleTable.toggleRowSelection(row)
+    },
+    uploadExcel() {
+      this.$router.push('/hardware/mifiUpload')
     },
     jump(card) {
       this.$router.push(`/business/flowInfo?iccid=${card}`)
@@ -380,14 +376,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleDownload() {
       // downOrder(this.listQuery, '.table').then(res => {
       //   if (+res.status === 0) {

@@ -164,19 +164,8 @@
         </template>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
     <el-dialog :visible.sync="dialogFormVisible" title="添加换卡">
       <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" label-position="right" label-width="9rem">
         <el-form-item label="旧卡号" prop="oldcard">
@@ -217,8 +206,12 @@ import {
   regionData,
   CodeToText
 } from 'element-china-area-data'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'ChangeCard',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -261,7 +254,7 @@ export default {
       whether,
       list: [],
       agentSelect: [],
-      total: null,
+      total: 0,
       tableKey: 0,
       listQuery: {
         oldcard: '',
@@ -521,14 +514,7 @@ export default {
       }
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleDownload() {
       exportExpressNO({
         isTure: this.listQuery.isTure,

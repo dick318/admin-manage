@@ -118,38 +118,46 @@
           <span>{{ scope.row.money }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showColumn['actions']" :label="$t('table.actions')" align="left" show-overflow-tooltip min-width="100px">
+      <el-table-column v-if="showColumn['actions']" :label="$t('table.actions')" align="left" show-overflow-tooltip min-width="200px">
         <template slot-scope="scope">
+          <!--  -->
           <el-button v-permission="['kuyuplat:orderAccountStatus:update']" type="primary" size="mini" @click="updateStatus(scope.row)">修改状态</el-button>
+          <el-button v-permission="['kuyuplat:orderAccount:refund']" v-if="scope.row.status==3" type="danger" size="mini" @click="refundApplication(scope.row)">退款</el-button>
         </template>
       </el-table-column>
     </el-table>
-
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <el-dialog :visible.sync="dialogFormVisible" title="退款">
+      <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" class="dialog" label-position="right" label-width="8rem">
+        <el-form-item label="退款金额" prop="money">
+          <el-input v-model.trim.number="temp.money" placeholder="退款金额" clearable/>
+        </el-form-item>
+        <el-form-item label="退款备注" prop="remarks">
+          <el-input v-model.trim="temp.remarks" clearable placeholder="退款备注"/>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
+        <el-button type="primary" @click="updateData">{{ $t('table.confirm') }}</el-button>
+      </div>
+    </el-dialog>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
   </div>
 </template>
 
 <script>
 import {
-  searchOrderAccounts, updateOrderAccountStatus, exportRechargeInfo
+  searchOrderAccounts, updateOrderAccountStatus, exportRechargeInfo, orderAccountRefund
 } from '@/api/order'
 import { statusMap, orderStatusSelect, operatorArr,
   agentArr } from '@/utils/mapArr'
 import waves from '@/directive/waves' // 水波纹指令
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'AmountOrder',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -160,12 +168,13 @@ export default {
       pickerOptions: this.processDate(),
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       aidObject: '',
       oidObject: '',
       oidSelect: [],
       agentSelect: [],
       operatorids: [],
+      dialogFormVisible: false,
       listQuery: {
         pageNo: 1,
         pageSize: 10,
@@ -179,6 +188,19 @@ export default {
         operatorids: '',
         starttime: '',
         endtime: ''
+      },
+      rules: {
+        money: [
+          { required: true, message: '请输入退款金额', trigger: 'blur' },
+          { type: 'number', message: '必须为数值' }
+        ],
+        remarks: [
+          { required: true, message: '请输入退款备注', trigger: 'blur' }
+        ]
+      },
+      temp: {
+        money: '',
+        remarks: ''
       },
       filtersArr: [
         { text: '订单时间', value: 'addtime' },
@@ -213,6 +235,30 @@ export default {
     this.getList()
   },
   methods: {
+    refundApplication(row) {
+      this.dialogFormVisible = true
+      this.temp = Object.assign({}, { id: row.id, money: row.money }) // copy obj
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    updateData() {
+      this.$refs['dataForm'].validate(valid => {
+        if (valid) {
+          orderAccountRefund(this.temp, '.el-dialog__footer').then(res => {
+            this.$notify({
+              type: +res.status === 0 ? 'success' : 'error',
+              message: res.message,
+              duration: 2000
+            })
+            if (res.status === 0) {
+              this.dialogFormVisible = false
+              this.getList('sec')
+            }
+          })
+        }
+      })
+    },
     filterChange(value) {
       let Arr = []
       Object.values(value).map((v, i) => {
@@ -303,14 +349,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleDownload() {
       this.$confirm('此操作将导出数据, 是否继续?', '提示', {
         confirmButtonText: '确定',

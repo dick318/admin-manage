@@ -30,9 +30,8 @@
       </el-table-column>
     </tree-table>
 
-    <div class="pagination-container">
-      <el-pagination :current-page="listQuery.pageNo" :page-sizes="[10,20,30, 50]" :page-size="listQuery.pageSize" :total="total" background layout="total, sizes,jumper, prev, pager, next" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" label-position="right" label-width="9rem">
         <el-form-item label="父级菜单">
@@ -70,9 +69,11 @@
 import treeTable from '@/components/TreeTable'
 import { getFirstMenus, getMenus, addMenu, updateMenu, deleteMenu, syncMenu } from '@/api/wechat'
 import waves from '@/directive/waves' // 水波纹指令
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'WeChatMenu',
-  components: { treeTable },
+  components: { treeTable, Pagination },
   directives: {
     waves
   },
@@ -88,7 +89,7 @@ export default {
       ],
       pidArr: [],
       list: [],
-      total: null,
+      total: 0,
       expandAll: false,
       checkedKeys: [],
       expandedKeys: [],
@@ -202,14 +203,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     resetTemp() {
       this.temp = {
         id: undefined,

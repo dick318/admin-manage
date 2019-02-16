@@ -64,9 +64,8 @@
 
     </el-table>
 
-    <div class="pagination-container">
-      <el-pagination :current-page="listQuery.pageNo" :page-sizes="[10,20,30, 50]" :page-size="listQuery.pageSize" :total="total" background layout="total, sizes,jumper, prev, pager, next" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" label-position="right" label-width="5rem">
         <el-form-item v-if ="dialogStatus=='update'||dialogStatus=='create'" label="名称" prop="uname">
@@ -135,8 +134,11 @@ import {
 import { toTreeData } from '@/utils/tree'
 import { roleArr, accountstypeMap, accountstypeSelect } from '@/utils/mapArr'
 import waves from '@/directive/waves' // 水波纹指令
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'Jurisdiction',
+  components: { Pagination },
   directives: {
     waves
   },
@@ -147,7 +149,7 @@ export default {
       accountstypeSelect,
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       menu: [],
       roleSelect: [],
       expandedKeys: [],
@@ -262,14 +264,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     resetTemp() {
       this.temp = {
         id: undefined,

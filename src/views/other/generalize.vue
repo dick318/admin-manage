@@ -148,18 +148,7 @@
       </el-table-column>
     </el-table>
 
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
     <el-dialog :visible.sync="dialogFormVisible" title="发货">
       <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" class="dialog" label-position="right" label-width="9rem">
         <el-form-item label="快递公司" prop="Cname">
@@ -192,9 +181,12 @@ import { obtainUpdate, batchExport, getObtain } from '@/api/generalize'
 import { getSeckillNames } from '@/api/seckill'
 import { obtainStatusSelect } from '@/utils/mapArr'
 import { downloadFile } from '@/utils'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'Generalize',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -205,7 +197,7 @@ export default {
       dialogFormVisible: false,
       list: [],
       seckillArr: [],
-      total: null,
+      total: 0,
       tableKey: 0,
       listQuery: {
         seckillId: +this.$route.query.id || '',
@@ -361,14 +353,7 @@ export default {
       }
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     javaDownload() {
       const tempData = Object.assign({}, this.listQuery)
       delete tempData.pageNo

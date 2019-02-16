@@ -121,11 +121,7 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <div class="pagination-container">
-      <el-pagination :current-page="listQuery.pageNo" :page-sizes="[10,20,30, 50]" :page-size="pageSize" :pager-count="5" :total="total" background layout="total, sizes,jumper, prev, pager, next" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
-
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="pageSize" @pagination="getList" />
   </div>
 </template>
 
@@ -142,8 +138,11 @@ import {
 } from '@/utils/mapArr'
 import checkPermission from '@/utils/permission' // 权限判断函数
 import waves from '@/directive/waves' // 水波纹指令
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'CardPackage',
+  components: { Pagination },
   directives: {
     waves
   },
@@ -155,7 +154,7 @@ export default {
       cardTypeSelect,
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       oidSelect: [],
       operator_type,
       type,
@@ -199,14 +198,7 @@ export default {
         this.message.error('请输入卡号！')
       }
     },
-    handleSizeChange(val) {
-      this.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     getList(type) {
       searchAddFlowPackages(Object.assign(this.listQuery, { pageSize: this.pageSize }), '.table').then(res => {
         if (!type) {

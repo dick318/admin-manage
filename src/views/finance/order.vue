@@ -204,18 +204,7 @@
         <el-button v-else type="primary" @click="updateDataMore">{{ $t('table.confirm') }}</el-button>
       </div>
     </el-dialog>
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
   </div>
 </template>
@@ -228,8 +217,12 @@ import { statusMap, tradeMap, orderStatusSelect, packageEffectMap, packageEffect
   operatorArr, accountsArr,
   agentArr, tradeSelect } from '@/utils/mapArr'
 import waves from '@/directive/waves' // 水波纹指令
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
 export default {
   name: 'OrderFlow',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -267,7 +260,7 @@ export default {
       pickerOptions: this.processDate(),
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       aidObject: '',
       oidObject: '',
       zidObject: '',
@@ -664,14 +657,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     handleDownload() {
       this.$confirm('此操作将导出数据, 是否继续?', '提示', {
         confirmButtonText: '确定',

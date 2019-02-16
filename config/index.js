@@ -11,7 +11,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/plat/*': {
-        target: 'http://api.szcoolfish.com',
+        target: 'http://120.77.253.165:20102',
         changeOrigin: true,
         secure: false
       }

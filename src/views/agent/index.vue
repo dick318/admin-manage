@@ -89,10 +89,7 @@
         </template>
       </el-table-column>
     </tree-table>
-
-    <div class="pagination-container">
-      <el-pagination :current-page="listQuery.pageNo" :page-sizes="[10,20,30,50]" :page-size="listQuery.pageSize" :total="total" background layout="total, sizes,jumper, prev, pager, next" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" :inline="true" class="dialog" label-position="right" label-width="9rem">
         <el-form-item v-if ="dialogStatus=='updateUserRole'" label="权限" prop="menu">
@@ -204,11 +201,11 @@ import {
   TextToCode
 } from 'element-china-area-data'
 import { roleArr } from '@/utils/mapArr'
-import store from '@/store'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'AgentManage',
-  components: { treeTable },
+  components: { treeTable, Pagination },
   directives: {
     waves
   },
@@ -264,7 +261,7 @@ export default {
         }
       ],
       list: [],
-      total: null,
+      total: 0,
       expandAll: false,
       menu: [],
       checkedKeys: [],
@@ -529,14 +526,7 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
+
     resetTemp() {
       this.temp = {
         id: undefined,
@@ -662,7 +652,7 @@ export default {
             }
             updatePer(data, '.el-dialog__footer').then(res => {
               if (res.status === 0) {
-                store.dispatch('setAgentStatus', false)
+                this.$store.dispatch('setAgentStatus', false)
                 this.getList('sec')
                 this.$notify({
                   title: '结果',
@@ -713,7 +703,7 @@ export default {
             openid: tempData.openid
           }, '.el-dialog__footer').then(res => {
             if (+res.status === 0) {
-              store.dispatch('setAgentStatus', false)
+              this.$store.dispatch('setAgentStatus', false)
               this.$notify({
                 title: '结果',
                 message: res.message,
@@ -748,7 +738,7 @@ export default {
             id: row.id
           }, '.el-message-box').then(res => {
             if (+res.status === 0) {
-              store.dispatch('setAgentStatus', false)
+              this.$store.dispatch('setAgentStatus', false)
               this.$notify({
                 title: '结果',
                 message: res.message,

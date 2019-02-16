@@ -132,7 +132,7 @@ export function exportFinance(data, showLoading) {
 // 4.卡片回收
 export function cardBack(data, showLoading) {
   return request({
-    url: '/plat/card/v4/excel/card/batchCardBack',
+    url: '/plat/card/v4/cardBack',
     method: 'post',
     data,
     showLoading
@@ -171,6 +171,24 @@ export function batchCardDivide(data, showLoading) {
 export function batchCardDelete(data, showLoading) {
   return request({
     url: '/plat/card/v4/excel/card/batchCardDelete',
+    method: 'post',
+    data,
+    showLoading
+  })
+}
+// 卡片限速日志查询
+export function findSpeedLimitAction(data, showLoading) {
+  return request({
+    url: '/plat/card/v4/findSpeedLimitAction',
+    method: 'post',
+    data,
+    showLoading
+  })
+}
+// 卡片查询异常日志查询
+export function findQueryException(data, showLoading) {
+  return request({
+    url: '/plat/card/v4/findQueryException',
     method: 'post',
     data,
     showLoading

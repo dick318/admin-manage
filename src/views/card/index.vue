@@ -245,7 +245,7 @@
           <el-button v-if="checkPermission(['kuyuplat:rule:getRule'])&&checkPermission(['kuyuplat:rule:editRule'])" type="warning" size="mini" @click="grade(scope.row)">等级</el-button>
           <!-- <el-button v-permission="['common']" type="warning" size="mini" @click="threshold(scope.row)">阈值</el-button> -->
           <el-button v-permission="['kuyuplat:card:imeiReRecord']" v-if="scope.row.operatorType==2" type="warning" size="mini" @click="unbind(scope.row)">解绑</el-button>
-          <!-- <el-button v-permission="['common']" type="danger" size="mini" @click="recycle(scope.row)">回收</el-button> -->
+          <el-button v-permission="['kuyuplat:card:back']" v-if="aid" type="danger" size="mini" @click="recycle(scope.row)">回收</el-button>
           <!-- <el-button v-permission="['common']"  v-if="remarksType" type="success" size="mini" @click="remarks(scope.row)">备注</el-button> -->
         </template>
       </el-table-column>
@@ -290,23 +290,12 @@
         <el-button type="primary" @click="updateData">{{ $t('table.confirm') }}</el-button>
       </div>
     </el-dialog>
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50,100,500,1000]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
   </div>
 </template>
 
 <script>
-import { getCard, editCard, editRule, getRule, cardActivate, exportCardInfo, exportFinance } from '@/api/card'
+import { getCard, editCard, editRule, getRule, cardActivate, exportCardInfo, exportFinance, cardBack } from '@/api/card'
 import waves from '@/directive/waves' // 水波纹指令
 import { ctccSpeedSelect, cuccSpeedSelect, lifeCycleSelect, cardTypeMap,
   cardTypeSelect, lifeCycleMap, accountsArr, cardStatusMap, operator_type, cardPackageMap, cardPackageSelect,
@@ -315,9 +304,11 @@ import { toSize } from '@/utils'
 import { imeiReRecord } from '@/api/unbind'
 import { queryUseflow, queryCardStatus } from '@/api/cardInfo'
 import checkPermission from '@/utils/permission' // 权限判断函数
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'CardManage',
+  components: { Pagination },
   directives: {
     waves
   },
@@ -347,7 +338,7 @@ export default {
       pickerOptions: this.processDate(),
       tableKey: 0,
       list: [],
-      total: null,
+      total: 0,
       agentSelect: [],
       aidObject: {},
       oidSelect: [],
@@ -359,6 +350,7 @@ export default {
       cardStatus: [],
       cardType: [],
       zid: [],
+      aid: this.$route.query.aid,
       listQuery: {
         aid: +this.$route.query.aid || '',
         realStatus: '',
@@ -706,14 +698,6 @@ export default {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList()
-    },
     refresh(row) {
       Promise.all([queryUseflow({ method: 'queryUseflow', judge: 2, cardId: row.id }),
         queryCardStatus({ method: 'queryStatus', judge: 3, cardId: row.id })]).then(posts => {
@@ -760,40 +744,42 @@ export default {
         })
       })
     },
-    // recycle(row) {
-    //   this.$confirm('此操作将回收卡片, 是否继续?', '提示', {
-    //     confirmButtonText: '确定',
-    //     cancelButtonText: '取消',
-    //     type: 'warning'
-    //   }).then(() => {
-    //     cardBack({ cardId: row.id, type: 0, aid: 0 }, '.table').then(res => {
-    //       this.$message({
-    //         type: +res.status === 0 ? 'success' : 'error',
-    //         message: res.message
-    //       })
-    //       if (+res.status === 0) {
-    //         row.aid = ''
-    //         for (const v of this.list) {
-    //           if (+v.id === +row.id) {
-    //             const index = this.list.indexOf(v)
-    //             this.list.splice(index, 1, row)
-    //             break
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }).catch(() => {
-    //     this.$message({
-    //       type: 'info',
-    //       message: '已取消'
-    //     })
-    //   })
-    // },
+    recycle(row) {
+      this.$confirm('此操作将回收卡片, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        cardBack({ cardId: row.id, type: 0, aid: 0 }, '.table').then(res => {
+          this.$notify({
+            type: +res.status === 0 ? 'success' : 'error',
+            message: res.message,
+            duration: 2000
+          })
+          if (+res.status === 0) {
+            row.aid = ''
+            for (const v of this.list) {
+              if (+v.id === +row.id) {
+                const index = this.list.indexOf(v)
+                this.list.splice(index, 1, row)
+                break
+              }
+            }
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        })
+      })
+    },
     unbind(row) {
       if (+row.operatorType !== 2) {
         this.$notify({
           type: 'error',
-          message: '解绑功能仅支持电信卡！'
+          message: '解绑功能仅支持电信卡！',
+          duration: 2000
         })
         return false
       }

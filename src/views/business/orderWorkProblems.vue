@@ -43,18 +43,8 @@
         </template>
       </el-table-column>
     </el-table>
-    <div class="pagination-container">
-      <el-pagination
-        :current-page="listQuery.pageNo"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.pageSize"
-        :pager-count="5"
-        :total="total"
-        background
-        layout="total, sizes,jumper, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"/>
-    </div>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :model="temp" :rules="rules" :inline="true" label-position="right" class="dialog" label-width="9rem">
         <el-form-item label="问题名称:" prop="name">
@@ -76,9 +66,12 @@
 <script>
 import waves from '@/directive/waves' // 水波纹指令
 import { searchProblems, updateProblem, addProblem, deleteProblem } from '@/api/orderWork'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'OrderWorkProblems',
+  components: { Pagination },
+
   directives: {
     waves
   },
@@ -198,14 +191,7 @@ export default {
         })
       }).catch(() => {})
     },
-    handleSizeChange(val) {
-      this.listQuery.pageSize = val
-      this.getList('sec')
-    },
-    handleCurrentChange(val) {
-      this.listQuery.pageNo = val
-      this.getList('sec')
-    },
+
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList('sec')

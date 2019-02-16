@@ -82,4 +82,13 @@ export function refundApplicationForce(data, showLoading) {
     showLoading
   })
 }
+// 卡片余额退款申请接口
+export function orderAccountRefund(data, showLoading) {
+  return request({
+    url: '/plat/finance/v4/orderAccountRefund',
+    method: 'post',
+    data,
+    showLoading
+  })
+}
 
